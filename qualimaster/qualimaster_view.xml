@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+		<!-- View Area de Atuação do Projeto -->
+		<record model="ir.ui.view" id="view_area_atuacao_tree">
+			<field name="name">area.atuacao.tree</field>
+			<field name="model">area.atuacao</field>
+			<field name="arch" type="xml">
+				<tree string="Área de Atuação">
+					<field name="code"/>
+					<field name="name"/>
+					<field name="resp_id"/>
+				</tree>					
+			</field>
+		</record>
+
+		<record model="ir.ui.view" id="view_area_atuacao_form">
+			<field name="name">area.atuacao.form</field>
+			<field name="model">area.atuacao</field>
+			<field name="arch" type="xml">
+				<form string="Área de Atuação" version="7.0">
+					<group col="4">
+						<group>
+							<field name="code"/>
+						</group>
+						<group>						
+							<field name="name"/>
+							<field name="resp_id"/>
+						</group>						
+					</group>					
+				</form>
+			</field>
+		</record>
+
+		<record model="ir.actions.act_window" id="action_area_atuacao_tree">
+			<field name="name">Área Atuação</field>
+			<field name="res_model">area.atuacao</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+		</record>
+				
+		<menuitem action="action_area_atuacao_tree" id="menu_area_atuacao_tree" parent="base.menu_base_config"/>
+		
+	</data>
+</openerp>

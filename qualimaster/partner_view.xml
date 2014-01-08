@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+  <data>
+
+    <record model="ir.ui.view" id="quali_view_boleto_partner_form">
+      <field name="name">quali_boleto.partner.form</field>
+      <field name="model">res.partner</field>
+      <field name="inherit_id" ref="base.view_partner_form"/>
+      <field name="arch" type="xml">
+		<notebook>
+			<page position="inside" string="Contratos">
+				<form string="Contrato" version="7.0">
+					<group>
+						<field name="mix_contrato"/>
+					</group>
+				</form>
+        	</page>
+        </notebook>
+	  </field>
+	</record>
+
+  </data>
+</openerp>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+
+		<!-- Customer Invoice views -->
+
+		<record model="ir.ui.view" id="view_quali_account_invoice_form">
+			<field name="name">quali_account.invoice.form</field>
+			<field name="model">account.invoice</field>
+			<field name="inherit_id" ref="account.invoice_form" />
+			<field name="arch" type="xml">
+				<!-- Remove fields in inherited view -->
+				<field name="move_id" position="after">
+					<field name="contract_id"/>
+				</field>
+			</field>
+		</record>
+
+	</data>
+
+</openerp>

@@ -1,0 +1,9 @@
+eclipse.preferences.version=1
+encoding//qualimaster/__init__.py=utf-8
+encoding//qualimaster/__openerp__.py=utf-8
+encoding//qualimaster/account_analytic_analysis.py=utf-8
+encoding//qualimaster/account_invoice.py=utf-8
+encoding//qualimaster/partner.py=utf-8
+encoding//qualimaster/product.py=utf-8
+encoding//qualimaster/qualimaster.py=utf-8
+encoding//qualimaster/sale.py=utf-8

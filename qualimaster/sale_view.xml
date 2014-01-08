@@ -28,11 +28,6 @@
             <field name="model">sale.order</field>
             <field name="inherit_id" ref="sale.view_sales_order_filter" />
             <field name="arch" type="xml">
-            	<filter string="Done" position="after">
-                    <separator/>
-                    <filter string="Consultoria" domain="[('categ_ids','in',self.cons_id())]" help="Vendas de Auditoria" icon="terp-personal" name="vendas_auditoria"/>
-            		            		
-            	</filter>
                 <filter string="Order Date" position="after">
             		<filter string="Área" icon="terp-personal" domain="[]" context="{'group_by':'areaatu_id'}"/>
 					<filter string="Categoria" icon="terp-personal" domain="[]" context="{'group_by':'categ_ids'}"/>          		

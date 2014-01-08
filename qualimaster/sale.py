@@ -35,6 +35,7 @@ class sale_order(orm.Model):
                         'use_phases': True,
                         'obj_product_id': line.product_id.id, 
                         'areaatu_id': data['areaatu_id'][0],
+                        'status': 'draft',
                         }
             _logger.info(data['name'] + ' / '+line.name)
             contract_id = contract_obj.create(cr,uid,contract,context)

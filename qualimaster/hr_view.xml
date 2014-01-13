@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+		<record model="ir.ui.view" id="view_quali_employee_form">
+			<field name="name">quali_hr.employee.form</field>
+			<field name="model">hr.employee</field>
+			<field name="inherit_id" ref="hr.view_employee_form" />
+			<field name="arch" type="xml">
+				<!-- Add fields in inherited view -->
+                <xpath expr="//group[@name='active_group']" position="before">
+                    <group string="Qualimaster">
+                        <field name="is_tech_mananger"/>
+						<field name="pr_comiss_tec" attrs="{'invisible': [('is_tech_mananger','=',False)]}"/>                            
+                    </group>
+                </xpath>
+			</field>
+		</record>
+	</data>
+</openerp>

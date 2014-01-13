@@ -2,13 +2,13 @@
 
 from osv import fields, osv
 
-class area_atuacao(osv.osv):
-    """área de atuacao do Serviço"""
-    _name = 'area.atuacao'
+class area_tecnica(osv.osv):
+    """área de atuacao técnica"""
+    _name = 'area.tecnica'
     _columns = {
-                'name': fields.char('Área', size=30, required=True),
+                'name': fields.char('Área/Portal', size=30, required=True),
                 'code': fields.char('Código', size=5, required=True),
                 'resp_id': fields.many2one('res.users', 'Responsável', required=True),
                 }
 
-area_atuacao()
+area_tecnica()

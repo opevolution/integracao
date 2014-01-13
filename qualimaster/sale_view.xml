@@ -7,7 +7,8 @@
             <field name="inherit_id" ref="sale.view_order_tree" />
             <field name="arch" type="xml">
                 <field name="name" position="after">
-                	<field name="areaatu_id" />
+                	<field name="area_tecnica_id" />
+                	<field name="categ_prod_id" />
                 </field>
             </field>
 		</record>
@@ -18,7 +19,8 @@
             <field name="inherit_id" ref="sale.view_quotation_tree" />
             <field name="arch" type="xml">
                 <field name="name" position="after">
-                	<field name="areaatu_id" />
+                	<field name="area_tecnica_id" />
+                	<field name="categ_prod_id" />
                 </field>
             </field>
 		</record>
@@ -29,8 +31,8 @@
             <field name="inherit_id" ref="sale.view_sales_order_filter" />
             <field name="arch" type="xml">
                 <filter string="Order Date" position="after">
-            		<filter string="Área" icon="terp-personal" domain="[]" context="{'group_by':'areaatu_id'}"/>
-					<filter string="Categoria" icon="terp-personal" domain="[]" context="{'group_by':'categ_ids'}"/>          		
+            		<filter string="Área" icon="terp-personal" domain="[]" context="{'group_by':'area_tecnica_id'}"/>
+					<filter string="Categoria" icon="terp-personal" domain="[]" context="{'group_by':'categ_prod_id'}"/>          		
 				</filter>            		
             </field>
         </record>
@@ -44,7 +46,8 @@
                 	<button name="contrato_create" states="manual,progress" string="Criar Contrato" type="object" class="oe_highlight" groups="base.group_user"/>
 				</button>                	
 	       		<field name="project_id" position="after">
-					<field name="areaatu_id"/>
+                	<field name="area_tecnica_id" />
+                	<field name="categ_prod_id" />
 				</field>					
 			</field>
 		</record>

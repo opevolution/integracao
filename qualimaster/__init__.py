@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-import sale
-import partner
-import account_analytic_analysis
+import qualimaster
+import hr
 import account_invoice
 import product
-import qualimaster
+import res_company
+import sale
+import analytic

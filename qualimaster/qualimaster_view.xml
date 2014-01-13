@@ -2,11 +2,11 @@
 <openerp>
 	<data>
 		<!-- View Area de Atuação do Projeto -->
-		<record model="ir.ui.view" id="view_area_atuacao_tree">
-			<field name="name">area.atuacao.tree</field>
-			<field name="model">area.atuacao</field>
+		<record model="ir.ui.view" id="view_area_tecnica_tree">
+			<field name="name">area.tecnica.tree</field>
+			<field name="model">area.tecnica</field>
 			<field name="arch" type="xml">
-				<tree string="Área de Atuação">
+				<tree string="Área tecnica">
 					<field name="code"/>
 					<field name="name"/>
 					<field name="resp_id"/>
@@ -14,11 +14,11 @@
 			</field>
 		</record>
 
-		<record model="ir.ui.view" id="view_area_atuacao_form">
-			<field name="name">area.atuacao.form</field>
-			<field name="model">area.atuacao</field>
+		<record model="ir.ui.view" id="view_area_tecnica_form">
+			<field name="name">area.tecnica.form</field>
+			<field name="model">area.tecnica</field>
 			<field name="arch" type="xml">
-				<form string="Área de Atuação" version="7.0">
+				<form string="Área Técnica" version="7.0">
 					<group col="4">
 						<group>
 							<field name="code"/>
@@ -32,14 +32,14 @@
 			</field>
 		</record>
 
-		<record model="ir.actions.act_window" id="action_area_atuacao_tree">
-			<field name="name">Área Atuação</field>
-			<field name="res_model">area.atuacao</field>
+		<record model="ir.actions.act_window" id="action_area_tecnica_tree">
+			<field name="name">Área Técnica</field>
+			<field name="res_model">area.tecnica</field>
             <field name="view_type">form</field>
             <field name="view_mode">tree,form</field>
 		</record>
 				
-		<menuitem action="action_area_atuacao_tree" id="menu_area_atuacao_tree" parent="base.menu_base_config"/>
+		<menuitem action="action_area_tecnica_tree" id="menu_area_tecnica_tree" parent="base.menu_base_config"/>
 		
 	</data>
 </openerp>

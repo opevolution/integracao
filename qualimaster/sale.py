@@ -45,7 +45,8 @@ class sale_order(orm.Model):
         return False
 
     _columns = {
-               'areaatu_id': fields.many2one('area.atuacao', 'Área', required=True),
+               'area_tecnica_id': fields.many2one('area.tecnica', 'Portal', required=True),
+               'categ_prod_id': fields.many2one('product.category', 'Categoria', required=True), 
                }
 
 sale_order()

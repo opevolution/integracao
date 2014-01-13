@@ -8,9 +8,8 @@
 			<field name="arch" type="xml">
                 <xpath expr="//group[@name='sale']" position="after">
                 	<group name="qualimaster" string="Características" colspan="2"  attrs="{'invisible':[('type','!=','service')]}">
-						<field name="horas_trab"/>
-						<field name="prazo_projeto"/>
-						<field name="pagamento"/>						
+						<field name="project_template_id"/>
+						<field name="area_tecnica_id"/>
 					</group>
 				</xpath>								
     	    </field>

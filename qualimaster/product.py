@@ -10,7 +10,8 @@ class product_product(osv.osv):
 
     _inherit = 'product.product'
     _columns = {
-                'project_template_id': fields.many2one('project.project', 'Projeto Modelo',  domain=[('state', '=', 'template')]),
+                'model_project_id': fields.many2one('model.project', 'Projeto Modelo'),
+                'project_template_id': fields.many2one('project.project', 'Projeto Modelo'),
                 'area_tecnica_id': fields.many2one('area.tecnica', u'Área/Portal'),
                 }
 

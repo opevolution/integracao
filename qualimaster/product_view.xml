@@ -8,7 +8,7 @@
 			<field name="arch" type="xml">
                 <xpath expr="//group[@name='sale']" position="after">
                 	<group name="qualimaster" string="Características" colspan="2"  attrs="{'invisible':[('type','!=','service')]}">
-						<field name="project_template_id"/>
+						<field name="model_project_id"/>
 						<field name="area_tecnica_id"/>
 					</group>
 				</xpath>								

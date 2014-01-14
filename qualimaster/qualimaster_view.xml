@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 	<data>
+		
+        <menuitem id="menu_models" name="Modelos" parent="base.menu_definitions" sequence="1"/>
+		
 		<!-- View Area de Atuação do Projeto -->
 		<record model="ir.ui.view" id="view_area_tecnica_tree">
 			<field name="name">area.tecnica.tree</field>
@@ -40,6 +43,241 @@
 		</record>
 				
 		<menuitem action="action_area_tecnica_tree" id="menu_area_tecnica_tree" parent="base.menu_base_config"/>
+
+		<!-- View Tarefas Projeto Modelo -->
 		
+		<record model="ir.ui.view" id="view_model_task_tree">
+			<field name="name">model.task.tree</field>
+			<field name="model">model.task</field>
+			<field name="arch" type="xml">
+				<tree string="Tarefas Modelo">
+					<field name="name"/>
+				</tree>					
+			</field>
+		</record>
+        	        	
+         <record model="ir.ui.view" id="view_model_task_view">
+            <field name="name">model.task.form</field>
+            <field name="model">model.task</field>
+            <field name="arch" type="xml">
+                <form string="fr_model_task" version="7.0">
+	                <sheet string="sh_model_task">
+	                    <div class="oe_title">
+	                        <label for="name" class="oe_edit_only" string="Fase do Modelo de Projeto"/>
+	                        <h1>
+	                            <field name="name" string="Tarefa do Modelo de Projeto"/>
+	                        </h1>
+	                    </div>
+	                    <notebook>
+	                        <page string="Opções" name="opcoes">
+	                        	<separator name="sep1" string="Referência"/>
+	                        	<group>
+	                        		<field name="model_project_id"/> 
+	                        		<field name="phase_id"/>
+	                        	</group>
+	                        	<separator name="sep2" string="Opções"/>
+	                    		<group name="Valores">
+		                			<field name="sequence"/>
+		                			<field name="priority"/>
+									<field name="planned_hours" widget="float_time"/>		                			
+								</group>                			
+								<separator name="sep3" string="Descrição"/>
+		                		<field name="description" nolabel="1"/>
+		                	</page>
+		                </notebook>
+		        	</sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_model_task_filter">
+            <field name="name">model.task.select</field>
+            <field name="model">model.task</field>
+            <field name="arch" type="xml">
+                <search string="Procura Tarefa Modelo Projeto">
+                    <field name="name" string="Nome"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_model_task" model="ir.actions.act_window">
+            <field name="name">Tarefas_form</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">model.task</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="view_model_task_tree"/>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="search_view_id" ref="view_model_task_filter"/>
+        </record>
+		       	
+        <record id="action_model_project_model_task_all" model="ir.actions.act_window">
+            <field name="name">Tarefas_btn</field>
+            <field name="res_model">model.task</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_model_project_id': [active_id], 'default_model_project_id': active_id, 'active_test': False}</field>
+            <field name="search_view_id" ref="view_model_task_filter"/>
+        </record>
+                        
+        <menuitem action="action_model_task" name="Tarefas" id="menu_models_task_view" parent="menu_models" sequence="3"/>
+
+		<!-- View fases Projeto Modelo -->
+		
+		<record model="ir.ui.view" id="view_model_phase_tree">
+			<field name="name">model.phase.tree</field>
+			<field name="model">model.phase</field>
+			<field name="arch" type="xml">
+				<tree string="Fases Modelo">
+					<field name="name"/>
+				</tree>					
+			</field>
+		</record>
+        	        	
+         <record model="ir.ui.view" id="view_model_phase_view">
+            <field name="name">model.phase.form</field>
+            <field name="model">model.phase</field>
+            <field name="arch" type="xml">
+                <form string="Modelo phase" version="7.0">
+	                <sheet string="Modelo phase">
+	                    <div class="oe_title">
+	                        <label for="name" class="oe_edit_only" string="Fase do Modelo de Projeto"/>
+	                        <h1>
+	                            <field name="name" string="Fase do Modelo de Projeto"/>
+	                        </h1>
+	                    </div>
+	                    <notebook>
+	                        <page string="Opções" name="opcoes">
+								<separator name="sep1" string="Referência"/>
+	                        	<group>
+	                        		<field name="model_project_id"/> 
+	                        	</group>
+	                        	<separator name="sep2" string="Padrão"/>
+	                    		<group name="Valores">
+		                			<field name="sequence"/>
+		                			<field name="product_uom"/>
+								</group>                			
+								<separator name="sep3" string="Descrição"/>
+		                		<field name="description" nolabel="1"/>
+		                	</page>
+		                </notebook>
+		        	</sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_model_phase_filter">
+            <field name="name">model.phase.select</field>
+            <field name="model">model.phase</field>
+            <field name="arch" type="xml">
+                <search string="Procura Fase Modelo Projeto">
+                    <field name="name" string="Nome"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_model_phase" model="ir.actions.act_window">
+            <field name="name">Fases</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">model.phase</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="view_model_phase_tree"/>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="search_view_id" ref="view_model_phase_filter"/>
+        </record>
+
+        <record id="action_model_project_model_phase_all" model="ir.actions.act_window">
+            <field name="name">Fases_btn</field>
+            <field name="res_model">model.phase</field>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{'search_default_model_project_id': [active_id], 'default_model_project_id': active_id, 'active_test': False}</field>
+            <field name="search_view_id" ref="view_model_phase_filter"/>
+        </record>
+                        
+        <menuitem action="action_model_phase" name="Fases" id="menu_models_phase_view" parent="menu_models" sequence="2"/>
+         
+		<!-- View Projeto Modelo -->
+		
+		<record model="ir.ui.view" id="view_model_project_tree">
+			<field name="name">model.project.tree</field>
+			<field name="model">model.project</field>
+			<field name="arch" type="xml">
+				<tree string="Área tecnica">
+					<field name="name"/>
+				</tree>					
+			</field>
+		</record>
+					
+        <record model="ir.ui.view" id="view_model_project_view">
+            <field name="name">model.project.form</field>
+            <field name="model">model.project</field>
+            <field name="arch" type="xml">
+                <form string="Modelo Projeto" version="7.0">
+	                <sheet string="Modelo Projeto">
+	                    <div class="oe_title">
+	                        <label for="name" class="oe_edit_only" string="Modelo de Projeto"/>
+	                        <h1>
+	                            <field name="name" string="Modelo de Projeto"/>
+	                        </h1>
+	                        <div name="options_active">
+	                            <field name="use_scrum" class="oe_inline"/>
+	                            <label for="use_scrum"/>
+	                            <field name="use_timesheets" class="oe_inline"/>
+	                            <label for="use_timesheets"/>
+	                            <field name="use_phases" class="oe_inline"/>
+	                            <label for="use_phases"/>
+	                            <field name="use_tasks" class="oe_inline"/>
+	                            <label for="use_tasks"/>
+	                            <field name="use_issues" class="oe_inline"/>
+	                            <label for="use_issues"/>
+	                        </div>
+	                    </div>
+	                    <div class="oe_right oe_button_box" name="buttons" groups="base.group_user">
+	                    	<button name="%(action_model_project_model_task_all)d" string="Tarefas" type="action" attrs="{'invisible':[('use_tasks','=', False)]}"/>
+	                    	<button name="%(action_model_project_model_phase_all)d" string="Fases" type="action" attrs="{'invisible':[('use_phases','=', False)]}"/>
+	                    </div>
+						<notebook>
+	                        <page string="Opções" name="opcoes">
+			                    <separator name="sep1" string="Planejamento"/>
+		                		<group name="Manual" attrs="{'invisible':[ '|',('use_phases','=', True),('use_tasks','=', True)]}">
+		                			<field name="planned_hours" widget="float_time"/>
+								</group>                			
+		                		<group name="Automático" attrs="{'invisible':[('use_phases','=', False),('use_tasks','=', False)]}">
+		                			<field name="task_count" attrs="{'invisible':[('use_tasks','=', False)]}"/>
+		                			<field name="phase_count" attrs="{'invisible':[('use_phases','=', False)]}"/>
+									<field name="planned_hours_count" widget="float_time"/>                			
+								</group>                			
+								<separator name="sep2" string="Descrição"/>
+		                		<field name="description" nolabel="1"/>
+		                	</page>
+		                </notebook>
+		        	</sheet>
+                </form>
+            </field>
+        </record>
+
+        <record model="ir.ui.view" id="view_model_project_filter">
+            <field name="name">model.project.select</field>
+            <field name="model">model.project</field>
+            <field name="arch" type="xml">
+                <search string="Procura Modelo Projeto">
+                    <field name="name" string="Nome"/>
+                </search>
+            </field>
+        </record>
+
+        <record id="action_model_project" model="ir.actions.act_window">
+            <field name="name">Modelos de Projetos</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">model.project</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="view_model_project_tree"/>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+            <field name="search_view_id" ref="view_model_project_filter"/>
+        </record>
+
+        <menuitem action="action_model_project" name="Projetos" id="menu_models_project_view" parent="menu_models" sequence="1"/>         
+
 	</data>
 </openerp>

@@ -13,6 +13,7 @@
 					<field name="code"/>
 					<field name="name"/>
 					<field name="resp_id"/>
+					<field name="tecnico_id"/>					
 				</tree>					
 			</field>
 		</record>
@@ -25,6 +26,7 @@
 					<group col="4">
 						<group>
 							<field name="code"/>
+							<field name="tecnico_id"/>							
 						</group>
 						<group>						
 							<field name="name"/>
@@ -101,7 +103,7 @@
         </record>
 
         <record id="action_model_task" model="ir.actions.act_window">
-            <field name="name">Tarefas_form</field>
+            <field name="name">Tarefas</field>
             <field name="type">ir.actions.act_window</field>
             <field name="res_model">model.task</field>
             <field name="view_type">form</field>
@@ -112,7 +114,7 @@
         </record>
 		       	
         <record id="action_model_project_model_task_all" model="ir.actions.act_window">
-            <field name="name">Tarefas_btn</field>
+            <field name="name">Grupo de Tarefas</field>
             <field name="res_model">model.task</field>
             <field name="view_mode">tree,form</field>
             <field name="context">{'search_default_model_project_id': [active_id], 'default_model_project_id': active_id, 'active_test': False}</field>
@@ -187,7 +189,7 @@
         </record>
 
         <record id="action_model_project_model_phase_all" model="ir.actions.act_window">
-            <field name="name">Fases_btn</field>
+            <field name="name">Grupo de Fases</field>
             <field name="res_model">model.phase</field>
             <field name="view_mode">tree,form</field>
             <field name="context">{'search_default_model_project_id': [active_id], 'default_model_project_id': active_id, 'active_test': False}</field>
@@ -230,7 +232,9 @@
 	                            <label for="use_tasks"/>
 	                            <field name="use_issues" class="oe_inline"/>
 	                            <label for="use_issues"/>
-	                        </div>
+			                    <field name="is_training" class="oe_inline"/>
+			                    <label for="is_training"/>
+							</div>
 	                    </div>
 	                    <div class="oe_right oe_button_box" name="buttons" groups="base.group_user">
 	                    	<button name="%(action_model_project_model_task_all)d" string="Tarefas" type="action" attrs="{'invisible':[('use_tasks','=', False)]}"/>

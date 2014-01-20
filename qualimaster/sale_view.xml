@@ -1,6 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 	<data>
+		
+		<record id="quali_view_shop_form" model="ir.ui.view">
+			<field name="name">quali_sale.shop.form</field>
+			<field name="model">sale.shop</field>
+			<field name="inherit_id" ref="sale.view_shop_form" />
+			<field name="arch" type="xml">
+	       		<field name="company_id" position="after">
+                	<field name="vl_porc_comiss" />
+				</field>					
+			</field>
+		</record>
+				
+		
 		<record id="quali_sale_order_tree1" model="ir.ui.view">
             <field name="name">quali_sale.order.tree1</field>
             <field name="model">sale.order</field>

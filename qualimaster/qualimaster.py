@@ -8,7 +8,8 @@ class area_tecnica(osv.osv):
     _columns = {
                 'name': fields.char('Área/Portal', size=30, required=True),
                 'code': fields.char('Código', size=5, required=True),
-                'resp_id': fields.many2one('res.users', 'Responsável', required=True),
+                'resp_id': fields.many2one('res.users', u'Gte. Responsável'),
+                'tecnico_id': fields.many2one('hr.employee', u'Gte.Técnico', domain=[('is_tech_mananger', '=', True)]),
                 }
 
 area_tecnica()
@@ -60,6 +61,7 @@ class model_project(osv.osv):
                 'use_timesheets': fields.boolean('Apontamento de Horas'),
                 'use_phases': fields.boolean('Fases'),
                 'use_issues': fields.boolean('Incidentes'),
+                'is_training': fields.boolean('Treinamento'),
                 'description': fields.text('Descrição'),
                 'planned_hours': fields.float('Total Horas Planejadas',),
                 'task_ids': fields.one2many('model.task','model_project_id','Tarefas'),

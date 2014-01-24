@@ -18,25 +18,26 @@ sale_shop()
 class sale_order(osv.osv):
     _inherit = 'sale.order'
     
-    def cons_id(self):
-        mach=[]
-        #lids=self.pool.get('res.users').search(cr,uid,[('active','=',True)])
-        return 0
-     
+    def account_analytic_create(self, cr , uid, valores, context):
+        """Gera contrato com os campos contidos em valores"""
+        ObjContrato = self.pool.get('account.analytic.account')
+        IdContrato = ObjContrato.create(cr,uid,valores,context)
+        return IdContrato
+    
     def contrato_create(self, cr, uid, ids, context=None):
-        contract_obj = self.pool.get('account.analytic.account')
-        contract_ids = []
+        """Gera o contrato para o pedido de vendas"""
+
         Order_Id = ids[0]
         Order_obj = self.read(cr, uid, Order_Id, context=context)
-        _logger.info('Objeto Order.Sale ==> / '+str(Order_Id))
+
         Order_Shop_Id = Order_obj['shop_id'][0]
-        _logger.info('Objeto shop.order ==> / '+str(Order_Shop_Id))
-        dt_atual = datetime.datetime.today()
   
         invoiced_sale_line_ids = self.pool.get('sale.order.line').search(cr, uid, [('order_id', '=', Order_Id)], context=context)
         for line in self.pool.get('sale.order.line').browse(cr, uid, invoiced_sale_line_ids, context=context):
+
             _logger.info('==> / '+line.name)
             obj_servico = self.pool.get('product.product').browse(cr, uid, line.product_id.id, context=context)
+            
             obj_shop = self.pool.get('sale.shop').browse(cr,uid,Order_Shop_Id,context=context)
             comis_reg = obj_shop['vl_porc_comiss']
             _logger.info('Objeto comis_reg ==> / '+str(comis_reg))
@@ -53,16 +54,11 @@ class sale_order(osv.osv):
             IdResp = None
             IdTec = None
             if IdAreaTec:
-                #_logger.info('Objeto area_tecnica_id ==> / '+str(IdAreaTec))
                 obj_AreaTec = self.pool.get('area.tecnica').browse(cr,uid,IdAreaTec,context=context)
                 IdResp = obj_AreaTec['resp_id'].id
-                #_logger.info('Objeto nome ==> / '+obj_AreaTec['name'])
-                #_logger.info('Objeto IdResp A ==> / '+str(IdResp))
                 if IdResp == False:
                     IdResp = Order_obj['user_id'][0]
-                    #_logger.info('Objeto IdResp B ==> / '+str(IdResp))
                 IdTec  = obj_AreaTec['tecnico_id'].id
-                #_logger.info('Objeto IdTec ==> / '+str(IdTec))
 #            tmpInicio = int(obj_servico.sale_delay)
 #            tmpTrab = obj_servico.prazo_projeto
             contract = {
@@ -85,15 +81,29 @@ class sale_order(osv.osv):
                         'categ_id': Order_obj['categ_prod_id'][0], 
                         'shop_id': int(Order_Shop_Id),
                         'vl_porc_reg': comis_reg,
-                        'tecnico_id': int(IdTec), 
+                        'tecnico_id': IdTec or None, 
                         'vl_porc_tec': 0,
+                        'saleorder_id': Order_Id,
+                        'use_timesheets': False,
+                        'use_tasks': False,
+                        'use_phases': False,
+                        'use_issues': False,
+                        'is_training': False,
                         'state': 'draft',
                         }
-            #_logger.info(data['name'] + ' / '+line.name)
-            contract_id = contract_obj.create(cr,uid,contract,context)
-            contract_ids.append(contract_id)
-            
-            #self.write(cr, uid, [Order_Id], {'state': 'done'})
+            IdModelProjeto = obj_servico['model_project_id'].id
+            if IdModelProjeto != False:
+                objMdProj = self.pool.get('model.project').browse(cr,uid,IdModelProjeto,context=context)
+                contract['use_timesheets']  = objMdProj['use_timesheets']
+                contract['use_tasks']       = objMdProj['use_tasks']
+                contract['use_phases']      = objMdProj['use_phases']
+                contract['use_issues']      = objMdProj['use_issues']
+                contract['is_training']     = objMdProj['is_training']
+                _logger.info('Descricao do Projeto Modelo ==> / '+str(objMdProj['name']))
+              
+            IdContrato = self.account_analytic_create(cr, uid, contract, context)
+            _logger.info('Contrato '+str(IdContrato)+' foi criado!')
+            self.write(cr, uid, [Order_Id], {'state': 'done'})
         return False
 
     _columns = {

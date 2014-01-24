@@ -5,6 +5,7 @@ encoding//qualimaster/account_invoice.py=utf-8
 encoding//qualimaster/analytic.py=utf-8
 encoding//qualimaster/hr.py=utf-8
 encoding//qualimaster/product.py=utf-8
+encoding//qualimaster/project.py=utf-8
 encoding//qualimaster/qualimaster.py=utf-8
 encoding//qualimaster/res_company.py=utf-8
 encoding//qualimaster/sale.py=utf-8

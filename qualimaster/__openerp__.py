@@ -18,6 +18,7 @@
         'res_company_view.xml',
         'sale_view.xml',
         'analytic_view.xml',
+        'project_view.xml',
         ],
     'demo_xml': [],
     'test': [],

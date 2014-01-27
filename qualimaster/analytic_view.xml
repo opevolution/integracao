@@ -31,10 +31,14 @@
 				</page>
 				<notebook>
 					<page name="contract" string="Contrato">
-						<group string="Objeto do Contrato" name="object">
+						<group string="Objeto" name="object">
 							<field name="obj_product_id" nolabel="1"/>
 						</group>
-                        <group string="Renewal" name="contract">
+						<group string="Orçamento" name="object">
+							<field name="hr_qtde" widget="float_time"/>
+							<field name="vl_hora"/>
+						</group>
+                        <group string="Tempo de Execução" name="contract">
                             <p colspan="2" class="oe_grey oe_edit_only">
                                 Once the end date of the contract is
                                 passed or the maximum number of service
@@ -53,11 +57,7 @@
                         <field name="description"/>
 					</page>
 					<page name="faturamento" string="Faturamento">
-						<group name="Valores">
-							<field name="hr_qtde" widget="float_time"/>
-							<field name="vl_hora"/>
-						</group>							
-						<separator name="toinvoice" string="Invoicing"/>
+						<separator name="toinvoice" string="Demonstrativo"/>
 	                    <table class="oe_form_analytic_account">
 	                        <tr>
 	                            <th class="oe_timesheet_grey" width="160px"></th>
@@ -75,7 +75,7 @@
 	                            </td><td class="oe_timesheet_grey">
 	                                <field name="fix_price_invoices" class="oe_inline"/>
 	                            </td><td>
-	                                <field class="oe_inline" name="amount_max" attrs="{'invisible': [('fix_price_invoices','=',False)]}"/>
+	                                <field class="oe_inline" name="total_proj" attrs="{'invisible': [('fix_price_invoices','=',False)]}"/>
 	                            </td><td>
 	                                <field class="oe_inline" name="vl_desconto" attrs="{'invisible': [('fix_price_invoices','=',False)]}"/>
 	                           </td><td>
@@ -119,9 +119,11 @@
 	                            </td>
 	                        </tr>
 	                    </table>
-	                    <separator string="Pedido" name="Pedido"/>
-						<field name="saleorder_id" nolabel="1"/>                    
-						<separator string="Faturas" name="faturas"/>
+	                    <group name="faturamento" string="Faturamento">
+							<field name="saleorder_id"/>                    
+							<field name="inv_payment_term_id"/>
+							<field name="dias_intervalo"/>							
+						</group>							
 						<field name="invoice_ids" nolabel="1"/>
 					</page>
 					<page name="comissionamento" string="Comissão">						

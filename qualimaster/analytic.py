@@ -44,6 +44,7 @@ class account_analytic_account(osv.osv):
                             'name': vlName,
                             'origin': contrato['name'],
                             'type': 'out_invoice',
+                            'fiscal_type': 'service',
                             'reference': vlName,
                             'account_id': Partner.property_account_receivable.id,
                             'partner_id': idPartner,
@@ -56,6 +57,7 @@ class account_analytic_account(osv.osv):
                             'company_id': contrato['company_id'][0],
                             'user_id': uid or False,
                             'contract_id': contrato['id'],
+                            'state': 'draft',
                             }
             
         return invoice_vals
@@ -68,13 +70,14 @@ class account_analytic_account(osv.osv):
         vlQtde = context.get('vlqtde', False)
         pcDesc = context.get('pcDesc', False)
         linha_fat = {
+                     'name': 'Teste',
                      'origin': contrato['name'],
                      'sequence': vlSeq or 10,
                      'invoice_id': int(idFatura) or None,
                      'product_id': contrato['obj_product_id'][0],
-                     'price_unit': vlPrecoU or 0,
+                     'price_unit': vlPrecoU or 0.00,
                      'quantity': vlQtde or 1,
-                     'discount': pcDesc or 0,
+                     'discount': pcDesc or 0.00,
                      }
         return linha_fat
     
@@ -86,7 +89,7 @@ class account_analytic_account(osv.osv):
 
     def _create_line_fatura(self, cr , uid, valores, context):
         """Gera linha da fatura com os campos contidos em valores"""
-        ObjLineFatura = self.pool.get('account.invoice')
+        ObjLineFatura = self.pool.get('account.invoice.line')
         IdLineFatura = ObjLineFatura.create(cr,uid,valores,context)
         return IdLineFatura
        
@@ -100,6 +103,29 @@ class account_analytic_account(osv.osv):
         idContrato = ids[0]
         _logger.info('Id Contrato: '+str(idContrato))
         Contrato = self.read(cr, uid, idContrato, context=context)
+        
+        _logger.info('Data Prevista para o fim do projeto '+str(Contrato['date']))
+        
+        if not Contrato['date_start']:
+            raise osv.except_osv('Erro!',
+                'Defina a data início de execução do projeto.')
+
+        if not Contrato['date']:
+            raise osv.except_osv('Erro!',
+                'Defina a data máxima de termino de execução do projeto.')
+
+        if Contrato['date'] <= Contrato['date_start']:
+            raise osv.except_osv('Erro!',
+                'A data de conclusão não pode ser menor que a data de inicio do projeto.')
+
+        if not Contrato['inv_payment_term_id']:
+            raise osv.except_osv('Erro!',
+                'Defina a forma de pagamento para as faturas a serem geradas.')
+        
+        if not Contrato['payment_term_id']:
+            raise osv.except_osv('Erro!',
+                'Defina a forma de pagamento do contrato.')
+        
 
         idDiario = self.pool.get('account.journal').search(cr, uid,[('type', '=', 'sale'), ('company_id', '=', Contrato['company_id'][0])],limit=1)
         if not idDiario:
@@ -123,7 +149,7 @@ class account_analytic_account(osv.osv):
         if idPedido:
             Pedido = self.pool.get('sale.order').browse(cr, uid, idPedido, context)
          
-            idFormaPgto = Pedido.payment_term.id
+            idFormaPgto = Contrato['payment_term_id'][0]
             if idFormaPgto:
                 ObjFormaPgto = self.pool.get('account.payment.term')
                 FormaPgto = ObjFormaPgto.browse(cr, uid, idFormaPgto, context)
@@ -142,10 +168,11 @@ class account_analytic_account(osv.osv):
                     _logger.info('Fatura: '+str(fatura))
                     idFatura = self._create_fatura(cr, uid, fatura, context)
                     _logger.info('Fatura Id '+str(idFatura)+' gerada com sucesso!')
+                    #idFatura = False
                     lnfatura = self._prepara_linha_fatura(cr, uid, idFatura, Contrato, context)
                     _logger.info('Linha: '+str(lnfatura))
-                    #idLinha = self._create_line_fatura(cr , uid, lnfatura, context)
-                    #_logger.info('Linha Id '+str(idLinha)+' gerada com sucesso!')
+                    idLinha = self._create_line_fatura(cr , uid, lnfatura, context)
+                    _logger.info('Linha Id '+str(idLinha)+' gerada com sucesso!')
                     
                     NrParc += 1
 
@@ -171,6 +198,7 @@ class account_analytic_account(osv.osv):
                 'vl_porc_reg': fields.float(u'Comissão Regional',digits=(6,4), readonly=True, states={'draft': [('readonly', False)]}),
                 'shop_id': fields.many2one('sale.shop', 'Regional', readonly=True, states={'draft': [('readonly', False)]}),
                 'saleorder_id': fields.many2one('sale.order', 'Pedido',readonly=True, states={'draft': [('readonly', False)]}),
+                'payment_term_id': fields.many2one('account.payment.term', 'Forma de Pagamento', required=True, readonly=True, states={'draft': [('readonly', False)]}),
                 'inv_payment_term_id': fields.many2one('account.payment.term', 'Forma de Pgto das Faturas', readonly=True, states={'draft': [('readonly', False)]}),
                 'total_proj': fields.function(_get_valor_fixo,  type='float', string='Total do Projeto',),
                 'dias_intervalo': fields.integer('Dias para o primeiro Faturamento'),

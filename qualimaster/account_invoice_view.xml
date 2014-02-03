@@ -4,6 +4,8 @@
 
 		<!-- Customer Invoice views -->
 
+		<delete model="ir.actions.act_window" id="account.action_invoice_tree1" />
+			
 		<record model="ir.ui.view" id="view_quali_account_invoice_form">
 			<field name="name">quali_account.invoice.form</field>
 			<field name="model">account.invoice</field>

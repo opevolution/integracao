@@ -8,6 +8,7 @@
 			<field name="arch" type="xml">
                 <field name="company_registry" position="after">
 					<field name="porcent_comiss"/>
+					<field name="gestor_id"/>					
 				</field>								
     	    </field>
 		</record>	

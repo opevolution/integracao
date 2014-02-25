@@ -4,5 +4,6 @@ encoding/__openerp__.py=utf-8
 encoding/account_invoice.py=utf-8
 encoding/analytic.py=utf-8
 encoding/hr.py=utf-8
+encoding/project.py=utf-8
 encoding/qualimaster.py=utf-8
 encoding/res_company.py=utf-8

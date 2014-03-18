@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+
+        <record id="crm_case_form_view_leads_quali_form" model="ir.ui.view">
+            <field name="name">crm.crm_case_form_view_leads.quali.form.inherit</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_case_form_view_leads"/>
+            <field eval="20" name="priority"/>
+            <field name="arch" type="xml">
+				<field name="name" position="after">
+					<label for="obj_product_id" class="oe_edit_only"/>
+					<h3><field name="obj_product_id" placeholder="Informe o produto..."/></h3>
+				</field>
+			</field>
+		</record>
+
+        <record id="crm_case_form_view_oppor_quali_form" model="ir.ui.view">
+            <field name="name">crm.crm_case_form_view_oppor.quali.form.inherit</field>
+            <field name="model">crm.lead</field>
+            <field name="inherit_id" ref="crm.crm_case_form_view_oppor"/>
+            <field name="arch" type="xml">
+				<field name="name" position="after">
+					<label for="obj_product_id" class="oe_edit_only"/>
+					<field name="obj_product_id" placeholder="Informe o produto..."/>
+				</field>
+			</field>
+		</record>
+
+	</data>
+</openerp>

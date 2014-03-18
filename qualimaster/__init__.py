@@ -7,3 +7,4 @@ import res_company
 import sale
 import analytic
 import project
+import crm_lead

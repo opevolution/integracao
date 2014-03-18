@@ -10,8 +10,6 @@
             <field name="arch" type="xml">
 				<xpath expr="//button[@name='set_open']" position='replace'>
 				</xpath>
-				<xpath expr="//button[@name='set_open']" position='replace'>
-				</xpath>
             	<button name="set_pending" position="before">
 					<button name="contract_confirm"
 					        string="Confirmar" type="object"

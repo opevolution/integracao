@@ -2,12 +2,16 @@
 
 {
     "name": "Qualimaster",
-    "version": "0.0.002",
+    "version": "0.0.003",
     "author": "Alexandre Defendi",
     "category": "Account",
     "website": "http://evoluirinformatica.com.br",
     "description": "",
-    'depends': ['l10n_br_account',],
+    'depends': ['l10n_br_account',
+                'hr',
+                'crm',
+                'project',
+                ],
     'js': [],
     'init_xml': [],
     'update_xml': [
@@ -19,6 +23,7 @@
         'sale_view.xml',
         'analytic_view.xml',
         'project_view.xml',
+        'crm_lead_view.xml',
         ],
     'demo_xml': [],
     'test': [],

@@ -107,8 +107,8 @@ class sale_order(osv.osv):
         return False
 
     _columns = {
-               'area_tecnica_id': fields.many2one('area.tecnica', 'Portal', required=True),
-               'categ_prod_id': fields.many2one('product.category', 'Categoria', required=True), 
+               'area_tecnica_id': fields.many2one('area.tecnica', 'Portal'),
+               'categ_prod_id': fields.many2one('product.category', 'Categoria'), 
                }
 
 sale_order()

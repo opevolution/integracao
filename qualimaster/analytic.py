@@ -118,6 +118,10 @@ class account_analytic_account(osv.osv):
             raise osv.except_osv('Erro!',
                 'A data de conclusão não pode ser menor que a data de inicio do projeto.')
 
+        if Contrato['date'] <= Contrato['date_start']:
+            raise osv.except_osv('Erro!',
+                'A data de conclusão não pode ser menor que a data de inici$
+
         if not Contrato['inv_payment_term_id']:
             raise osv.except_osv('Erro!',
                 'Defina a forma de pagamento para as faturas a serem geradas.')

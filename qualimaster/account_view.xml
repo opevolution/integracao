@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+	<data>
+
+		<!-- Customer Invoice views -->
+
+		<record model="ir.ui.view" id="view_quali_account_payment_term_form">
+			<field name="name">quali_account_payment_term.form</field>
+			<field name="model">account.payment.term</field>
+			<field name="inherit_id" ref="l10n_br_account.l10n_br_account_payment_term_form" />
+			<field name="arch" type="xml">
+				<!-- Remove fields in inherited view -->
+				<field name="indPag" position="after">
+					<field name="for_contract"/>
+				</field>
+			</field>
+		</record>
+
+	</data>
+</openerp>

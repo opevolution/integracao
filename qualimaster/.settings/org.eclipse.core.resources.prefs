@@ -1,9 +1,11 @@
 eclipse.preferences.version=1
 encoding/__init__.py=utf-8
 encoding/__openerp__.py=utf-8
+encoding/account.py=utf-8
 encoding/account_invoice.py=utf-8
 encoding/analytic.py=utf-8
 encoding/crm_lead.py=utf-8
+encoding/crm_make_sale.py=utf-8
 encoding/hr.py=utf-8
 encoding/project.py=utf-8
 encoding/qualimaster.py=utf-8

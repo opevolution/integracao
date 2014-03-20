@@ -134,7 +134,7 @@ class account_analytic_account(osv.osv):
         else:
             idDiario = idDiario[0]
 
-        vlContrato = Contrato['total_proj']
+        vlContrato = Contrato['total_proj'] - Contrato['vl_desconto']
         vlDias = Contrato['dias_intervalo']
         if vlDias:
             dtRefer = datetime.fromordinal(hj.toordinal()+(vlDias-1)).strftime('%Y-%m-%d')
@@ -205,7 +205,7 @@ class account_analytic_account(osv.osv):
                }
 
     _defaults = {
-        'dias_intervalo': 7,
+        'dias_intervalo': 5,
         'state': 'open',
     }
     

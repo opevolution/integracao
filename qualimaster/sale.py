@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 import logging
-import datetime
+#import datetime
 from openerp.osv import fields, osv
 
 _logger = logging.getLogger(__name__)
@@ -31,6 +31,11 @@ class sale_order(osv.osv):
         Order_obj = self.read(cr, uid, Order_Id, context=context)
 
         Order_Shop_Id = Order_obj['shop_id'][0]
+        
+        if  Order_obj['payment_term']:
+            FormaPgto =  Order_obj['payment_term'][0]
+        else:
+            FormaPgto = False
   
         invoiced_sale_line_ids = self.pool.get('sale.order.line').search(cr, uid, [('order_id', '=', Order_Id)], context=context)
         for line in self.pool.get('sale.order.line').browse(cr, uid, invoiced_sale_line_ids, context=context):
@@ -90,6 +95,8 @@ class sale_order(osv.osv):
                         'use_issues': False,
                         'is_training': False,
                         'state': 'draft',
+                        'description': Order_obj['note'] or '',
+                        'payment_term_id': FormaPgto,
                         }
             IdModelProjeto = obj_servico['model_project_id'].id
             if IdModelProjeto != False:

@@ -140,10 +140,10 @@ class account_analytic_account(osv.osv):
 
         vlContrato = Contrato['total_proj']
         vlDias = Contrato['dias_intervalo']
-        if vlDias:
-            dtRefer = datetime.fromordinal(hj.toordinal()+(vlDias-1)).strftime('%Y-%m-%d')
-        else:
-            dtRefer = hj.strftime('%Y-%m-%d')
+#         if vlDias:
+#             dtRefer = datetime.fromordinal(hj.toordinal()+(vlDias-1)).strftime('%Y-%m-%d')
+#         else:
+        dtRefer = hj.strftime('%Y-%m-%d')
          
         idServico = Contrato['obj_product_id'][0]
         if idServico:
@@ -162,7 +162,10 @@ class account_analytic_account(osv.osv):
                 for pagto in pagamentos:
                     context['nrparcela'] = NrParc
                     context['iddiario'] = idDiario
-                    context['date_invoice'] = pagto[0]
+                    if NrParc == 1:
+                        context['date_invoice'] = datetime.fromordinal(pagto[0].toordinal()+(vlDias-1)).strftime('%Y-%m-%d')
+                    else:
+                        context['date_invoice'] = pagto[0]
                     context['vlunit'] = pagto[1]
                     context['sequencia'] = 1
                     context['vlqtde'] = 1

@@ -120,7 +120,7 @@ class account_analytic_account(osv.osv):
 
         if Contrato['date'] <= Contrato['date_start']:
             raise osv.except_osv('Erro!',
-                'A data de conclusão não pode ser menor que a data de inici$
+                'A data de conclusão não pode ser menor que a data de inici.')
 
         if not Contrato['inv_payment_term_id']:
             raise osv.except_osv('Erro!',
@@ -138,7 +138,7 @@ class account_analytic_account(osv.osv):
         else:
             idDiario = idDiario[0]
 
-        vlContrato = Contrato['total_proj'] - Contrato['vl_desconto']
+        vlContrato = Contrato['total_proj']
         vlDias = Contrato['dias_intervalo']
         if vlDias:
             dtRefer = datetime.fromordinal(hj.toordinal()+(vlDias-1)).strftime('%Y-%m-%d')

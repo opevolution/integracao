@@ -2,7 +2,7 @@
 
 {
     "name": "Qualimaster",
-    "version": "0.0.009",
+    "version": "0.0.010",
     "author": "Alexandre Defendi",
     "category": "Account",
     "website": "http://www.evoluirinformatica.com.br",

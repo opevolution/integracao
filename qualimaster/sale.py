@@ -43,6 +43,13 @@ class sale_order(osv.osv):
             _logger.info('==> / '+line.name)
             obj_servico = self.pool.get('product.product').browse(cr, uid, line.product_id.id, context=context)
             
+            if obj_servico['default_code'] == False:
+                codServico = ''
+                raise osv.except_osv(_('Error!'),
+                    _(u'Adicione um código para o Serviço no Cadastro de Produtos'))
+            else:
+                codServico = obj_servico['default_code']
+            
             obj_shop = self.pool.get('sale.shop').browse(cr,uid,Order_Shop_Id,context=context)
             comis_reg = obj_shop['vl_porc_comiss']
             _logger.info('Objeto comis_reg ==> / '+str(comis_reg))
@@ -67,7 +74,7 @@ class sale_order(osv.osv):
 #            tmpInicio = int(obj_servico.sale_delay)
 #            tmpTrab = obj_servico.prazo_projeto
             contract = {
-                        'name': Order_obj['name'] + ' / '+obj_servico['default_code'],
+                        'name': Order_obj['name'] + ' / '+codServico,
                         'type': 'contract',
                         'partner_id': int(Order_obj['partner_id'][0]),
                         'user_id': IdResp, 

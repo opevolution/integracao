@@ -40,10 +40,20 @@ class account_analytic_account(osv.osv):
         nrParcela = context.get('nrparcela', False)
         idDiario  = context.get('iddiario', False)
         dtInvoice = context.get('date_invoice', False)
+
+        if contrato['name'] == False:
+            raise osv.except_osv(_('Error!'),
+                _(u'Informe um Número para o Contrato'))
+       
+
+        nrcontrato = contrato['name']
+        
+        x = nrcontrato.find(' / ')
+        nrcontrato = nrcontrato[0:x] 
+
         vlName = contrato['name'] +' / '+str(nrParcela)
         
-        nrcontrato = contrato['name']
-        nrfatura = self._only_digits(nrcontrato[0:7])
+        nrfatura = self._only_digits(nrcontrato)
         
         _logger.info('Prepara Fatura: NrParcela: '+str(nrParcela)+' / Id Diário: '+str(idDiario)+' / Data: '+str(dtInvoice))
         
@@ -55,7 +65,7 @@ class account_analytic_account(osv.osv):
         if nrParcela:
             invoice_vals = {
                             'name': vlName,
-                            'origin': nrcontrato,
+                            'origin': contrato['name'],
                             'type': 'out_invoice',
                             'fiscal_type': 'service',
                             'reference': vlName,
@@ -229,7 +239,7 @@ class account_analytic_account(osv.osv):
         
         #ObjContrato = self.get(cr, uid, [idContrato], context=context)       
         return self.write(cr, uid, ids, {'state': 'open'}, context=context)
-        #return False
+#        return False
     
     
     
@@ -238,7 +248,7 @@ class account_analytic_account(osv.osv):
                 'area_tecnica_id': fields.many2one('area.tecnica', 'Portal', help="Selecione a área Tec./Portal para este contrato.",readonly=True, states={'draft': [('readonly', False)]}), 
                 'categ_id': fields.many2one('product.category','Categoria', domain="[('type','=','normal')]", help="Selecione o grupo/categoria para este contrato.",readonly=True, states={'draft': [('readonly', False)]}),
                 'obj_product_id': fields.many2one('product.product', 'Objeto', domain=[('sale_ok', '=', True)],readonly=True, states={'draft': [('readonly', False)]}), 
-                'invoice_ids' : fields.one2many('account.invoice','contract_id','Faturas',readonly=True, states={'draft': [('readonly', False)]}),
+                'invoice_ids' : fields.one2many('account.invoice','contract_id','Faturas',readonly=True, states={'draft': [('readonly', False)],'open': [('readonly', False)]}),
                 'regional_id': fields.many2one('res.company', 'Regional',readonly=True, states={'draft': [('readonly', False)]}),
                 'hr_qtde': fields.float('Horas Previstas',digits=(6,4),readonly=True, states={'draft': [('readonly', False)]}),
                 'vl_hora': fields.float('Valor/Hora',digits_compute=dp.get_precision('Product Price'),readonly=True, states={'draft': [('readonly', False)]}),

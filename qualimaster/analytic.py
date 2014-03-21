@@ -1,16 +1,20 @@
 # -*- encoding: utf-8 -*-
 import logging
-
+import time
 from datetime import datetime
 from openerp.osv import osv, fields
-
+from openerp.tools.translate import _
 import openerp.addons.decimal_precision as dp
+import re
 
 _logger = logging.getLogger(__name__)
 
 class account_analytic_account(osv.osv):
     _inherit = 'account.analytic.account'
     
+    def _only_digits(self, v):
+        return re.sub('[^0-9]', '', v)
+
     def _get_valor_fixo(self, cr, uid, ids, field_name, arg, context=None):
         """Valor Fixo do Contrato"""
         if not ids:
@@ -37,12 +41,21 @@ class account_analytic_account(osv.osv):
         idDiario  = context.get('iddiario', False)
         dtInvoice = context.get('date_invoice', False)
         vlName = contrato['name'] +' / '+str(nrParcela)
+        
+        nrcontrato = contrato['name']
+        nrfatura = self._only_digits(nrcontrato[0:7])
+        
         _logger.info('Prepara Fatura: NrParcela: '+str(nrParcela)+' / Id Diário: '+str(idDiario)+' / Data: '+str(dtInvoice))
+        
+        if nrParcela == 1: 
+            FormaPgtoId = context.get('idpfpgto')
+        else:
+            FormaPgtoId = contrato['inv_payment_term_id'][0]
         
         if nrParcela:
             invoice_vals = {
                             'name': vlName,
-                            'origin': contrato['name'],
+                            'origin': nrcontrato,
                             'type': 'out_invoice',
                             'fiscal_type': 'service',
                             'reference': vlName,
@@ -51,12 +64,13 @@ class account_analytic_account(osv.osv):
                             'journal_id': idDiario,
                             #'invoice_line': [(6, 0, linhas)],
                             'currency_id': pedido.pricelist_id.currency_id.id,
-                            'payment_term': contrato['inv_payment_term_id'][0],
+                            'payment_term': FormaPgtoId,
                             'fiscal_position': Partner.property_account_position.id,
                             'date_invoice': dtInvoice,
                             'company_id': contrato['company_id'][0],
                             'user_id': uid or False,
                             'contract_id': contrato['id'],
+                            'internal_number': '%s%02d' % (nrfatura,nrParcela),
                             'state': 'draft',
                             }
             
@@ -65,6 +79,10 @@ class account_analytic_account(osv.osv):
     def _prepara_linha_fatura(self, cr, uid, idFatura, contrato, context=None):
         if context is None:
             context = {}
+
+        idProd = contrato['obj_product_id'][0]
+        produto = self.pool.get('product.product').browse(cr, uid, idProd, context)
+        
         vlSeq = context.get('sequencia', False)
         vlPrecoU = context.get('vlunit', False)
         vlQtde = context.get('vlqtde', False)
@@ -74,11 +92,14 @@ class account_analytic_account(osv.osv):
                      'origin': contrato['name'],
                      'sequence': vlSeq or 10,
                      'invoice_id': int(idFatura) or None,
-                     'product_id': contrato['obj_product_id'][0],
+                     'product_id': idProd,
                      'price_unit': vlPrecoU or 0.00,
                      'quantity': vlQtde or 1,
                      'discount': pcDesc or 0.00,
-                     }
+                     'product_type': 'service',
+                     'service_type_id': produto.service_type_id.id,
+                     'fiscal_classification_id': produto.property_fiscal_classification.id,
+                    }
         return linha_fat
     
     def _create_fatura(self, cr , uid, valores, context):
@@ -101,45 +122,57 @@ class account_analytic_account(osv.osv):
         hj = datetime.now()
         
         idContrato = ids[0]
-        _logger.info('Id Contrato: '+str(idContrato))
         Contrato = self.read(cr, uid, idContrato, context=context)
-        
-        _logger.info('Data Prevista para o fim do projeto '+str(Contrato['date']))
         
         if not Contrato['date_start']:
             raise osv.except_osv('Erro!',
-                'Defina a data início de execução do projeto.')
+                u'Defina a data início de execução do projeto.')
 
         if not Contrato['date']:
             raise osv.except_osv('Erro!',
-                'Defina a data máxima de termino de execução do projeto.')
+                u'Defina a data máxima de termino de execução do projeto.')
 
         if Contrato['date'] <= Contrato['date_start']:
             raise osv.except_osv('Erro!',
-                'A data de conclusão não pode ser menor que a data de inicio do projeto.')
+                u'A data de conclusão não pode ser menor que a data de inicio do projeto.')
 
         if Contrato['date'] <= Contrato['date_start']:
             raise osv.except_osv('Erro!',
-                'A data de conclusão não pode ser menor que a data de inici.')
+                u'A data de conclusão não pode ser menor que a data de inici.')
 
         if not Contrato['inv_payment_term_id']:
             raise osv.except_osv('Erro!',
-                'Defina a forma de pagamento para as faturas a serem geradas.')
+                u'Defina a forma de pagamento para as faturas a serem geradas.')
         
         if not Contrato['payment_term_id']:
             raise osv.except_osv('Erro!',
-                'Defina a forma de pagamento do contrato.')
+                u'Defina a forma de pagamento do contrato.')
         
-
+        ObjFormaPgto = self.pool.get('account.payment.term')
+        
         idDiario = self.pool.get('account.journal').search(cr, uid,[('type', '=', 'sale'), ('company_id', '=', Contrato['company_id'][0])],limit=1)
         if not idDiario:
             raise osv.except_osv(_('Error!'),
-                _('Defina o diário se vendas para esta empresa: "%s" (id:%d).') % (Contrato.company_id.name, Contrato.company_id.id))
+                _(u'Defina o diário se vendas para esta empresa: "%s" (id:%d).') % (Contrato.company_id.name, Contrato.company_id.id))
         else:
             idDiario = idDiario[0]
 
         vlContrato = Contrato['total_proj']
         vlDias = Contrato['dias_intervalo']
+        
+        if vlDias == 0:
+            idFPrime = ObjFormaPgto.search(cr, uid,[('name', '=', 'Pagamento Imediato')])
+            if len(idFPrime) <= 0:
+                raise osv.except_osv(_('Error!'),
+                    _(u'Crie uma forma de pagamento "Pagamento Imediato".'))
+        else:
+            stNrDias = '%sDD' % vlDias
+            idFPrime = ObjFormaPgto.search(cr, uid,[('name', '=', stNrDias)])
+            if len(idFPrime) <= 0:
+                raise osv.except_osv(_('Error!'),
+                    _(u'Crie uma forma de pagamento "%sDD".') % vlDias)
+
+        _logger.info('Forma Pgto ID = '+str(idFPrime[0]))
 #         if vlDias:
 #             dtRefer = datetime.fromordinal(hj.toordinal()+(vlDias-1)).strftime('%Y-%m-%d')
 #         else:
@@ -152,24 +185,26 @@ class account_analytic_account(osv.osv):
         idPedido = Contrato['saleorder_id'][0]
         if idPedido:
             Pedido = self.pool.get('sale.order').browse(cr, uid, idPedido, context)
-         
             idFormaPgto = Contrato['payment_term_id'][0]
             if idFormaPgto:
-                ObjFormaPgto = self.pool.get('account.payment.term')
                 FormaPgto = ObjFormaPgto.browse(cr, uid, idFormaPgto, context)
                 pagamentos = ObjFormaPgto.compute(cr, uid, idFormaPgto, value=vlContrato, date_ref=dtRefer)
                 NrParc = 1
                 for pagto in pagamentos:
+                    _logger.info('Data Fatura:'+pagto[0])
+                    dtFat = datetime.strptime(pagto[0],"%Y-%m-%d")
+                    _logger.info('Data Fatura:'+str(pagto[0]))
                     context['nrparcela'] = NrParc
                     context['iddiario'] = idDiario
                     if NrParc == 1:
-                        context['date_invoice'] = datetime.fromordinal(pagto[0].toordinal()+(vlDias-1)).strftime('%Y-%m-%d')
+                        context['date_invoice'] = datetime.fromordinal(dtFat.toordinal()+(vlDias-1)).strftime('%Y-%m-%d')
                     else:
-                        context['date_invoice'] = datetime.fromordinal(pagto[0].toordinal()-10).strftime('%Y-%m-%d')
+                        context['date_invoice'] = datetime.fromordinal(dtFat.toordinal()-10).strftime('%Y-%m-%d')
                     context['vlunit'] = pagto[1]
                     context['sequencia'] = 1
                     context['vlqtde'] = 1
                     context['pcDesc'] = 0.0
+                    context['idpfpgto'] = idFPrime[0]
                     
                     fatura = self._prepara_fatura(cr, uid, Contrato, Pedido, context)
                     _logger.info('Fatura: '+str(fatura))

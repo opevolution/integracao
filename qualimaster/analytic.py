@@ -181,6 +181,14 @@ class account_analytic_account(osv.osv):
         idServico = Contrato['obj_product_id'][0]
         if idServico:
             Servico = self.pool.get('product.product').browse(cr, uid, idServico, context)
+            if Servico.service_type_id.id == False:
+                raise osv.except_osv(_('Error!'),
+                    _(u'Este produto não tem o tipo de serviço.'))
+
+            if Servico.property_fiscal_classification.id == False:
+                raise osv.except_osv(_('Error!'),
+                    _(u'Este produto não tem a Classificação Fiscal.'))
+
          
         idPedido = Contrato['saleorder_id'][0]
         if idPedido:
@@ -219,9 +227,9 @@ class account_analytic_account(osv.osv):
                     NrParc += 1
 
         
-        #ObjContrato = self.get(cr, uid, [IdContrato], context=context)       
-        #return self.write(cr, uid, ids, {'state': 'open'}, context=context)
-        return False
+        #ObjContrato = self.get(cr, uid, [idContrato], context=context)       
+        return self.write(cr, uid, ids, {'state': 'open'}, context=context)
+        #return False
     
     
     

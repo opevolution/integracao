@@ -2,11 +2,12 @@
 
 import logging
 #import datetime
-from openerp.osv import fields, osv
+from openerp.osv import fields, orm
+import openerp.addons.decimal_precision as dp
 
 _logger = logging.getLogger(__name__)
 
-class sale_shop(osv.osv):
+class sale_shop(orm.Model):
     _inherit = "sale.shop"
     _columns = {
         'vl_porc_comiss': fields.float(u'% Comissão',digits=(6,4)),
@@ -14,9 +15,21 @@ class sale_shop(osv.osv):
 
 sale_shop()
 
-
-class sale_order(osv.osv):
+class sale_order(orm.Model):
     _inherit = 'sale.order'
+
+    def _amount_all(self, cr, uid, ids, field_name, arg, context=None):
+        res = {}
+        res = super(sale_order,self)._amount_all(cr, uid, ids, field_name, arg, context)
+        for order in self.browse(cr, uid, ids, context=context):
+            res[order.id]['amount_total'] = res[order.id]['amount_total'] - 100
+        return res
+# 
+#     def _get_order(self, cr, uid, ids, context=None):
+#         result = {}
+#         for line in self.pool.get('sale.order.line').browse(cr, uid, ids, context=context):
+#             result[line.order_id.id] = True
+#         return result.keys()
     
     def account_analytic_create(self, cr , uid, valores, context):
         """Gera contrato com os campos contidos em valores"""
@@ -32,6 +45,14 @@ class sale_order(osv.osv):
 
         Order_Shop_Id = Order_obj['shop_id'][0]
         
+        Empresa = self.pool.get('res.partner').browse(cr, uid, int(Order_obj['partner_id'][0]), context=context)
+        Contato = False
+        
+        if Empresa.is_company == False:
+            if Empresa.parent_id:
+                Contato = Empresa 
+                Empresa = self.pool.get('res.partner').browse(cr, uid, Contato.parent_id.id, context=context)
+        
         if  Order_obj['payment_term']:
             FormaPgto =  Order_obj['payment_term'][0]
         else:
@@ -45,7 +66,7 @@ class sale_order(osv.osv):
             
             if obj_servico['default_code'] == False:
                 codServico = ''
-                raise osv.except_osv(_('Error!'),
+                raise orm.except_orm(_('Error!'),
                     _(u'Adicione um código para o Serviço no Cadastro de Produtos'))
             else:
                 codServico = obj_servico['default_code']
@@ -76,7 +97,8 @@ class sale_order(osv.osv):
             contract = {
                         'name': Order_obj['name'] + ' / '+codServico,
                         'type': 'contract',
-                        'partner_id': int(Order_obj['partner_id'][0]),
+                        'partner_id': Empresa.id,
+                        'contato_id': False,
                         'user_id': IdResp, 
                         'manager_id': int(Order_obj['user_id'][0]),
                         'company_id': int(Order_obj['company_id'][0]),
@@ -104,7 +126,10 @@ class sale_order(osv.osv):
                         'state': 'draft',
                         'description': Order_obj['note'] or '',
                         'payment_term_id': FormaPgto,
+                        'vl_desconto': Order_obj['vl_desconto'],
                         }
+            if Contato:
+                contract['contato_id'] = Contato.id 
             IdModelProjeto = obj_servico['model_project_id'].id
             if IdModelProjeto != False:
                 objMdProj = self.pool.get('model.project').browse(cr,uid,IdModelProjeto,context=context)
@@ -122,7 +147,9 @@ class sale_order(osv.osv):
 
     _columns = {
                'area_tecnica_id': fields.many2one('area.tecnica', 'Portal'),
-               'categ_prod_id': fields.many2one('product.category', 'Categoria'), 
+               'categ_prod_id': fields.many2one('product.category', 'Categoria'),
+               'vl_desconto': fields.float('Valor Desconto',digits_compute=dp.get_precision('Product Price'),), 
                }
+    
 
 sale_order()

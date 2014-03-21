@@ -23,6 +23,7 @@
 				<field name="manager_id" position="after">
 					<field name="area_tecnica_id" widget="many2one_list"/>
 					<field name="categ_id"/>
+					<field name="contato_id"/>
 				</field>
 				<field name="company_id" position="after">
 					<field name="payment_term_id"/>

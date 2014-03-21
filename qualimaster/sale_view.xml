@@ -61,6 +61,9 @@
 	       		<field name="project_id" position="after">
                 	<field name="area_tecnica_id" />
                 	<field name="categ_prod_id" />
+				</field>
+				<field name="amount_untaxed" position="after">
+					<field name="vl_desconto" widget='monetary' options="{'currency_field': 'currency_id'}"/>
 				</field>					
 			</field>
 		</record>

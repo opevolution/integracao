@@ -262,6 +262,7 @@ class account_analytic_account(osv.osv):
                 'inv_payment_term_id': fields.many2one('account.payment.term', 'Forma de Pgto das Faturas', readonly=True, states={'draft': [('readonly', False)]}),
                 'total_proj': fields.function(_get_valor_fixo,  type='float', string='Total do Projeto',),
                 'dias_intervalo': fields.integer('Dias para o primeiro Faturamento'),
+                'contato_id': fields.many2one('res.partner', u'Contato/Responsável',  domain="[('is_company','=',False),('parent_id','=',partner_id)]",), 
                }
 
     _defaults = {

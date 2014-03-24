@@ -4,6 +4,7 @@ import logging
 #import datetime
 from openerp.osv import fields, orm
 import openerp.addons.decimal_precision as dp
+from openerp.tools.translate import _
 
 _logger = logging.getLogger(__name__)
 

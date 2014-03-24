@@ -123,8 +123,7 @@
 	                    </table>
 	                    <group name="faturamento" string="Faturamento">
 							<field name="saleorder_id"/>                    
-							<field name="inv_payment_term_id"/>
-							<field name="dias_intervalo"/>							
+							<field name="inv_payment_term_id"/>						
 						</group>							
 						<field name="invoice_ids" nolabel="1"/>
 					</page>

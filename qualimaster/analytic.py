@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 import logging
 import time
+import calendar
 from datetime import datetime
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
@@ -8,6 +9,10 @@ import openerp.addons.decimal_precision as dp
 import re
 
 _logger = logging.getLogger(__name__)
+
+def DiasMes(f):
+    firstweekday,days=calendar.monthrange(f.year,f.month)
+    return days
 
 class account_analytic_account(osv.osv):
     _inherit = 'account.analytic.account'
@@ -57,10 +62,7 @@ class account_analytic_account(osv.osv):
         
         _logger.info('Prepara Fatura: NrParcela: '+str(nrParcela)+' / Id Diário: '+str(idDiario)+' / Data: '+str(dtInvoice))
         
-        if nrParcela == 1: 
-            FormaPgtoId = context.get('idpfpgto')
-        else:
-            FormaPgtoId = contrato['inv_payment_term_id'][0]
+        FormaPgtoId = contrato['inv_payment_term_id'][0]
         
         if nrParcela:
             invoice_vals = {
@@ -157,7 +159,13 @@ class account_analytic_account(osv.osv):
         if not Contrato['payment_term_id']:
             raise osv.except_osv('Erro!',
                 u'Defina a forma de pagamento do contrato.')
-        
+
+        idCliente = Contrato['partner_id'][0]
+        Cliente = self.pool.get('res.partner').browse(cr, uid, idCliente, context)
+        if Cliente.parent_id:
+            raise osv.except_osv(_('Error!'),
+                    _(u'O cliente não pode ser um contato./n Informe a empresa que este contato pertence.'))
+
         ObjFormaPgto = self.pool.get('account.payment.term')
         
         idDiario = self.pool.get('account.journal').search(cr, uid,[('type', '=', 'sale'), ('company_id', '=', Contrato['company_id'][0])],limit=1)
@@ -168,24 +176,7 @@ class account_analytic_account(osv.osv):
             idDiario = idDiario[0]
 
         vlContrato = Contrato['total_proj']
-        vlDias = Contrato['dias_intervalo']
-        
-        if vlDias == 0:
-            idFPrime = ObjFormaPgto.search(cr, uid,[('name', '=', 'Pagamento Imediato')])
-            if len(idFPrime) <= 0:
-                raise osv.except_osv(_('Error!'),
-                    _(u'Crie uma forma de pagamento "Pagamento Imediato".'))
-        else:
-            stNrDias = '%sDD' % vlDias
-            idFPrime = ObjFormaPgto.search(cr, uid,[('name', '=', stNrDias)])
-            if len(idFPrime) <= 0:
-                raise osv.except_osv(_('Error!'),
-                    _(u'Crie uma forma de pagamento "%sDD".') % vlDias)
 
-        _logger.info('Forma Pgto ID = '+str(idFPrime[0]))
-#         if vlDias:
-#             dtRefer = datetime.fromordinal(hj.toordinal()+(vlDias-1)).strftime('%Y-%m-%d')
-#         else:
         dtRefer = hj.strftime('%Y-%m-%d')
          
         idServico = Contrato['obj_product_id'][0]
@@ -199,31 +190,39 @@ class account_analytic_account(osv.osv):
                 raise osv.except_osv(_('Error!'),
                     _(u'Este produto não tem a Classificação Fiscal.'))
 
-         
+        
+        # context['date_invoice'] = datetime.fromordinal(dtFat.toordinal()-10).strftime('%Y-%m-%d') 
         idPedido = Contrato['saleorder_id'][0]
         if idPedido:
             Pedido = self.pool.get('sale.order').browse(cr, uid, idPedido, context)
             idFormaPgto = Contrato['payment_term_id'][0]
+            idInvFormaPagto = Contrato['inv_payment_term_id'][0]
             if idFormaPgto:
                 FormaPgto = ObjFormaPgto.browse(cr, uid, idFormaPgto, context)
+                InvFormaPagto = ObjFormaPgto.browse(cr, uid, idInvFormaPagto, context)
+                DiaBase  = InvFormaPagto.dia_emiss
+                _logger.info('Dia Base: '+str(DiaBase))
                 pagamentos = ObjFormaPgto.compute(cr, uid, idFormaPgto, value=vlContrato, date_ref=dtRefer)
+                
                 NrParc = 1
                 for pagto in pagamentos:
-                    _logger.info('Data Fatura:'+pagto[0])
-                    dtFat = datetime.strptime(pagto[0],"%Y-%m-%d")
-                    _logger.info('Data Fatura:'+str(pagto[0]))
                     context['nrparcela'] = NrParc
                     context['iddiario'] = idDiario
                     if NrParc == 1:
-                        context['date_invoice'] = datetime.fromordinal(dtFat.toordinal()+(vlDias-1)).strftime('%Y-%m-%d')
+                        context['date_invoice'] = dtRefer
                     else:
-                        context['date_invoice'] = datetime.fromordinal(dtFat.toordinal()-10).strftime('%Y-%m-%d')
+                        dtFat = datetime.strptime(pagto[0],"%Y-%m-%d")
+                        _logger.info('Data Fatura:'+str(pagto[0]))
+                        Mes = dtFat.month
+                        Ano = dtFat.year
+                        newDtFat = datetime.strptime(str(Ano)+'-'+str(Mes)+'-'+str(DiaBase),'%Y-%m-%d')
+                        context['date_invoice'] = newDtFat
+                        
                     context['vlunit'] = pagto[1]
                     context['sequencia'] = 1
                     context['vlqtde'] = 1
                     context['pcDesc'] = 0.0
-                    context['idpfpgto'] = idFPrime[0]
-                    
+
                     fatura = self._prepara_fatura(cr, uid, Contrato, Pedido, context)
                     _logger.info('Fatura: '+str(fatura))
                     idFatura = self._create_fatura(cr, uid, fatura, context)
@@ -238,8 +237,8 @@ class account_analytic_account(osv.osv):
 
         
         #ObjContrato = self.get(cr, uid, [idContrato], context=context)       
-        return self.write(cr, uid, ids, {'state': 'open'}, context=context)
-#        return False
+#        return self.write(cr, uid, ids, {'state': 'open'}, context=context)
+        return False
     
     
     
@@ -259,14 +258,12 @@ class account_analytic_account(osv.osv):
                 'shop_id': fields.many2one('sale.shop', 'Regional', readonly=True, states={'draft': [('readonly', False)]}),
                 'saleorder_id': fields.many2one('sale.order', 'Pedido',readonly=True, states={'draft': [('readonly', False)]}),
                 'payment_term_id': fields.many2one('account.payment.term', 'Forma de Pagamento', required=True, readonly=True, states={'draft': [('readonly', False)]}),
-                'inv_payment_term_id': fields.many2one('account.payment.term', 'Forma de Pgto das Faturas', readonly=True, states={'draft': [('readonly', False)]}),
+                'inv_payment_term_id': fields.many2one('account.payment.term', 'Forma de Pgto das Faturas', domain=[('for_contract','=',True)], readonly=True, states={'draft': [('readonly', False)]}),
                 'total_proj': fields.function(_get_valor_fixo,  type='float', string='Total do Projeto',),
-                'dias_intervalo': fields.integer('Dias para o primeiro Faturamento'),
                 'contato_id': fields.many2one('res.partner', u'Contato/Responsável',  domain="[('is_company','=',False),('parent_id','=',partner_id)]",), 
                }
 
     _defaults = {
-        'dias_intervalo': 5,
         'state': 'open',
     }
     

@@ -6,7 +6,8 @@ class account_invoice(orm.Model):
     _inherit = 'account.payment.term'
     
     _columns = {
-               'for_contract': fields.boolean('Pagamento de Contratos'),
+                'dia_emiss': fields.integer('Dia Emissão'),
+                'for_contract': fields.boolean('Pagamento de Contratos'),
                }
 
 account_invoice()

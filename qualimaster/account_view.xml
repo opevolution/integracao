@@ -12,6 +12,7 @@
 				<!-- Remove fields in inherited view -->
 				<field name="indPag" position="after">
 					<field name="for_contract"/>
+					<field name="dia_emiss"/>
 				</field>
 			</field>
 		</record>

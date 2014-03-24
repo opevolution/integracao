@@ -18,12 +18,12 @@ sale_shop()
 class sale_order(orm.Model):
     _inherit = 'sale.order'
 
-    def _amount_all(self, cr, uid, ids, field_name, arg, context=None):
-        res = {}
-        res = super(sale_order,self)._amount_all(cr, uid, ids, field_name, arg, context)
-        for order in self.browse(cr, uid, ids, context=context):
-            res[order.id]['amount_total'] = res[order.id]['amount_total'] - 100
-        return res
+#     def _amount_all(self, cr, uid, ids, field_name, arg, context=None):
+#         res = {}
+#         res = super(sale_order,self)._amount_all(cr, uid, ids, field_name, arg, context)
+#         for order in self.browse(cr, uid, ids, context=context):
+#             res[order.id]['amount_total'] = res[order.id]['amount_total'] - 100
+#         return res
 # 
 #     def _get_order(self, cr, uid, ids, context=None):
 #         result = {}
@@ -42,6 +42,27 @@ class sale_order(orm.Model):
 
         Order_Id = ids[0]
         Order_obj = self.read(cr, uid, Order_Id, context=context)
+
+        if Order_obj['area_tecnica_id'] == False:
+            raise orm.except_orm(_('Error!'),
+                _(u'Informe a Área Técnica/Portal do Projeto'))
+
+        if Order_obj['categ_prod_id'] == False:
+            raise orm.except_orm(_('Error!'),
+                _(u'Informe a Categoria do Projeto'))
+
+        if Order_obj['dt_inicio'] == False:
+            raise orm.except_orm(_('Error!'),
+                _(u'Informe a Categoria do Projeto'))
+
+        if Order_obj['dt_fim'] == False:
+            raise orm.except_orm(_('Error!'),
+                _(u'Informe a Categoria do Projeto'))
+        
+        if Order_obj['payment_term_id'] == False:
+            raise orm.except_orm(_('Error!'),
+                _(u'Informe a Forma de Pagamento'))
+                
 
         Order_Shop_Id = Order_obj['shop_id'][0]
         
@@ -127,6 +148,8 @@ class sale_order(orm.Model):
                         'description': Order_obj['note'] or '',
                         'payment_term_id': FormaPgto,
                         'vl_desconto': Order_obj['vl_desconto'],
+                        'date_start': Order_obj['dt_inicio'],
+                        'date': Order_obj['dt_fim'],
                         }
             if Contato:
                 contract['contato_id'] = Contato.id 
@@ -149,6 +172,8 @@ class sale_order(orm.Model):
                'area_tecnica_id': fields.many2one('area.tecnica', 'Portal'),
                'categ_prod_id': fields.many2one('product.category', 'Categoria'),
                'vl_desconto': fields.float('Valor Desconto',digits_compute=dp.get_precision('Product Price'),), 
+               'dt_inicio': fields.date('Data Inicial',),
+               'dt_fim': fields.date('Data Final',),
                }
     
 

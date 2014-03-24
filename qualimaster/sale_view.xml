@@ -57,7 +57,14 @@
 			<field name="arch" type="xml">
                 <button name="action_cancel" position="before">
                 	<button name="contrato_create" states="manual,progress" string="Criar Contrato" type="object" class="oe_highlight" groups="base.group_user"/>
-				</button>                	
+				</button>
+				<field name="name" position="replace">
+					<field name="name" />
+				</field>               	
+				<field name="date_order" position="after">
+					<field name='dt_inicio'/>
+					<field name='dt_fim'/>
+				</field>
 	       		<field name="project_id" position="after">
                 	<field name="area_tecnica_id" />
                 	<field name="categ_prod_id" />

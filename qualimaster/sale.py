@@ -54,13 +54,13 @@ class sale_order(orm.Model):
 
         if Order_obj['dt_inicio'] == False:
             raise orm.except_orm(_('Error!'),
-                _(u'Informe a Categoria do Projeto'))
+                _(u'Informe a Data Inicial do Projeto'))
 
         if Order_obj['dt_fim'] == False:
             raise orm.except_orm(_('Error!'),
-                _(u'Informe a Categoria do Projeto'))
+                _(u'Informe a Data Final Projetada do Projeto'))
         
-        if Order_obj['payment_term_id'] == False:
+        if Order_obj['payment_term'] == False:
             raise orm.except_orm(_('Error!'),
                 _(u'Informe a Forma de Pagamento'))
                 

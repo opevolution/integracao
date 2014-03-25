@@ -9,4 +9,5 @@ import analytic
 import project
 import crm_lead
 import account
+import wizard
 #import crm_make_sale

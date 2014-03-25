@@ -2,7 +2,7 @@
 
 {
     "name": "Qualimaster",
-    "version": "0.0.017",
+    "version": "0.0.018",
     "author": "Alexandre Defendi",
     "category": "Account",
     "website": "http://www.evoluirinformatica.com.br",
@@ -25,7 +25,6 @@
         'project_view.xml',
         'crm_lead_view.xml',
         'account_view.xml',
-        'wizard/send_faturamento_view.xml',
         ],
     'demo_xml': [],
     'test': [],

@@ -4,10 +4,10 @@ from openerp.osv import fields, osv
 from openerp.tools.translate import _
 
 
-class send_faturamento(osv.osv_memory):
+class sendfaturamento(osv.osv_memory):
     """ Envio do Faturamento """
 
-    _name = 'send.faturamento'
+    _name = 'sendfaturamento'
 
     def action_send(self, cr, uid, ids, context=None):
         [wizard] = self.browse(cr, uid, ids)
@@ -39,5 +39,5 @@ class send_faturamento(osv.osv_memory):
                  'state': 'init',
                  }
 
-send_faturamento()
+sendfaturamento()
 # vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:

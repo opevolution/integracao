@@ -41,7 +41,12 @@ class account_analytic_account(osv.osv):
         idPartner = contrato['partner_id'][0]
         
         Partner = self.pool.get('res.partner').browse(cr, uid, idPartner, context)
+        fcateg = self.pool.get('l10n_br_account.fiscal.category')
+        idfcateg = fcateg.search(cr,uid,[('code', '=', u'Serviço')])[0]
         
+        if not idfcateg:
+            idfcateg = False
+            
         nrParcela = context.get('nrparcela', False)
         idDiario  = context.get('iddiario', False)
         dtInvoice = context.get('date_invoice', False)
@@ -70,6 +75,7 @@ class account_analytic_account(osv.osv):
                             'origin': contrato['name'],
                             'type': 'out_invoice',
                             'fiscal_type': 'service',
+                            'fiscal_category_id': idfcateg,
                             'reference': vlName,
                             'account_id': Partner.property_account_receivable.id,
                             'partner_id': idPartner,

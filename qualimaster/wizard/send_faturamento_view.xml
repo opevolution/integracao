@@ -2,9 +2,9 @@
 <openerp>
     <data>
 
-		<record id="wizard_send_faturamento_form" model="ir.ui.view">
-		    <field name="name">wizard.send.faturamento.form</field>
-		    <field name="model">send.faturamento</field>
+		<record id="sendfaturamento_form" model="ir.ui.view">
+		    <field name="name">sendfaturamento.form</field>
+		    <field name="model">sendfaturamento</field>
 		    <field name="arch" type="xml">
 		        <form string="Envio do Faturamento" version="7.0">
 		            <field name="state" invisible="1"/>
@@ -24,8 +24,8 @@
 		    </field>
 		</record>
 		
-		<record id="action_send_faturamento" model="ir.actions.act_window">
-		    <field name="name">Envio Faturamento</field>
+		<record id="action_sendfaturamento" model="ir.actions.act_window">
+		    <field name="name">sendfaturamento.action</field>
 		    <field name="res_model">send.faturamento</field>
 		    <field name="view_type">form</field>
 		    <field name="view_mode">form</field>

@@ -14,6 +14,7 @@
 				<!-- Remove fields in inherited view -->
 				<field name="account_id" position="after">
 					<field name="contract_id"/>
+					<field name="date_due"/>
 				</field>
 			</field>
 		</record>

@@ -98,6 +98,7 @@ class account_analytic_account(osv.osv):
         if context is None:
             context = {}
 
+
         idProd = contrato['obj_product_id'][0]
         produto = self.pool.get('product.product').browse(cr, uid, idProd, context)
         
@@ -106,7 +107,7 @@ class account_analytic_account(osv.osv):
         vlQtde = context.get('vlqtde', False)
         pcDesc = context.get('pcDesc', False)
         linha_fat = {
-                     'name': 'Teste',
+                     'name': produto.name,
                      'origin': contrato['name'],
                      'sequence': vlSeq or 10,
                      'invoice_id': int(idFatura) or None,
@@ -243,8 +244,8 @@ class account_analytic_account(osv.osv):
 
         
         #ObjContrato = self.get(cr, uid, [idContrato], context=context)       
-#        return self.write(cr, uid, ids, {'state': 'open'}, context=context)
-        return False
+        return self.write(cr, uid, ids, {'state': 'open'}, context=context)
+        #return False
     
     
     
@@ -263,7 +264,7 @@ class account_analytic_account(osv.osv):
                 'vl_porc_reg': fields.float(u'Comissão Regional',digits=(6,4), readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
                 'shop_id': fields.many2one('sale.shop', 'Regional', readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
                 'saleorder_id': fields.many2one('sale.order', 'Pedido',readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
-                'payment_term_id': fields.many2one('account.payment.term', 'Forma de Pagamento', required=True, readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
+                'payment_term_id': fields.many2one('account.payment.term', 'Forma de Pagamento', readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
                 'inv_payment_term_id': fields.many2one('account.payment.term', 'Forma de Pgto das Faturas', domain=[('for_contract','=',True)], readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]}),
                 'total_proj': fields.function(_get_valor_fixo,  type='float', string='Total do Projeto',),
                 'contato_id': fields.many2one('res.partner', u'Contato/Responsável',  domain="[('is_company','=',False),('parent_id','=',partner_id)]", states={'open': [('readonly', False)],'draft': [('readonly', False)]},), 

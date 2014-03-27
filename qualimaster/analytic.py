@@ -263,7 +263,7 @@ class account_analytic_account(osv.osv):
                 'vl_porc_reg': fields.float(u'Comissão Regional',digits=(6,4), readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
                 'shop_id': fields.many2one('sale.shop', 'Regional', readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
                 'saleorder_id': fields.many2one('sale.order', 'Pedido',readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
-                'payment_term_id': fields.many2one('account.payment.term', 'Forma de Pagamento', required=True, readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
+                'payment_term_id': fields.many2one('account.payment.term', 'Forma de Pagamento', readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]},),
                 'inv_payment_term_id': fields.many2one('account.payment.term', 'Forma de Pgto das Faturas', domain=[('for_contract','=',True)], readonly=True, states={'open': [('readonly', False)],'draft': [('readonly', False)]}),
                 'total_proj': fields.function(_get_valor_fixo,  type='float', string='Total do Projeto',),
                 'contato_id': fields.many2one('res.partner', u'Contato/Responsável',  domain="[('is_company','=',False),('parent_id','=',partner_id)]", states={'open': [('readonly', False)],'draft': [('readonly', False)]},), 

@@ -1,4 +1,7 @@
 eclipse.preferences.version=1
+encoding//wizard/__init__.py=utf-8
+encoding//wizard/wiz_confirm_bank.py=utf-8
+encoding//wizard/wiz_envio_saldo.py=utf-8
 encoding/__init__.py=utf-8
 encoding/__openerp__.py=utf-8
 encoding/account.py=utf-8

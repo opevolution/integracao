@@ -31,7 +31,18 @@ class sale_order(orm.Model):
 #         for line in self.pool.get('sale.order.line').browse(cr, uid, ids, context=context):
 #             result[line.order_id.id] = True
 #         return result.keys()
-    
+
+    def cancela_pedido(self, cr, uid, ids, context):
+        ObjContrato = self.pool.get('account.analytic.account')
+        for id in ids:
+            IdsContrato = ObjContrato.search(cr,uid,[('saleorder_id','=',id)])
+            if IdsContrato:
+                for Contrato in ObjContrato.browse(cr,uid,IdsContrato,context=context):
+                    if Contrato['state'] != 'cancelled':
+                        raise orm.except_orm(_('Error!'),
+                                            _(u'Cancele primeiro o contrato'))
+        return self.write(cr, uid, ids, {'state': 'cancel'}, context=context)
+            
     def account_analytic_create(self, cr , uid, valores, context):
         """Gera contrato com os campos contidos em valores"""
         ObjContrato = self.pool.get('account.analytic.account')
@@ -170,11 +181,11 @@ class sale_order(orm.Model):
         return False
 
     _columns = {
-               'area_tecnica_id': fields.many2one('area.tecnica', 'Portal'),
-               'categ_prod_id': fields.many2one('product.category', 'Categoria'),
-               'vl_desconto': fields.float('Valor Desconto',digits_compute=dp.get_precision('Product Price'),), 
-               'dt_inicio': fields.date('Data Inicial',),
-               'dt_fim': fields.date('Data Final',),
+               'area_tecnica_id': fields.many2one('area.tecnica', 'Portal', readonly=False, states={'done': [('readonly', True)]}),
+               'categ_prod_id': fields.many2one('product.category', 'Categoria', readonly=False, states={'done': [('readonly', True)]}),
+               'vl_desconto': fields.float('Valor Desconto',digits_compute=dp.get_precision('Product Price'), readonly=False, states={'done': [('readonly', True)]}), 
+               'dt_inicio': fields.date('Data Inicial', readonly=False, states={'done': [('readonly', True)]}),
+               'dt_fim': fields.date('Data Final', readonly=False, states={'done': [('readonly', True)]}),
                }
     
 

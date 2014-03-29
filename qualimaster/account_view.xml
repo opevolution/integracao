@@ -13,6 +13,7 @@
 				<field name="indPag" position="after">
 					<field name="for_contract"/>
 					<field name="dia_emiss"/>
+					<field name="is_pos"/>
 				</field>
 			</field>
 		</record>

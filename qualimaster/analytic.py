@@ -5,6 +5,7 @@ import calendar
 from datetime import datetime
 from openerp.osv import osv, fields
 from openerp.tools.translate import _
+from openerp import netsvc
 import openerp.addons.decimal_precision as dp
 import re
 
@@ -14,8 +15,32 @@ def DiasMes(f):
     firstweekday,days=calendar.monthrange(f.year,f.month)
     return days
 
+def DiasMesEx(Mes,Ano):
+    firstweekday,days=calendar.monthrange(Ano,Mes)
+    return days
+
 class account_analytic_account(osv.osv):
     _inherit = 'account.analytic.account'
+
+    def search_invoice_number(self, cr, uid,idCompany,nrInternal, context=None):
+        if context is None:
+            context = {}
+        _logger.info('Procura Invoice Number:'+str(nrInternal)+' / '+str(idCompany))
+         
+        domain = []
+        domain.extend(
+            [('company_id', '=', idCompany),
+            ('internal_number', '=', nrInternal),])
+         
+        invoice_id = self.pool.get('account.invoice').search(cr, uid, domain)
+             
+        if len(invoice_id) > 0:
+            return invoice_id
+             
+        return False
+
+    def set_open(self, cr, uid, ids, context=None):
+        return self.write(cr, uid, ids, {'state': 'draft'}, context=context)
     
     def _only_digits(self, v):
         return re.sub('[^0-9]', '', v)
@@ -34,6 +59,42 @@ class account_analytic_account(osv.osv):
             res[aaa_id] = valor
         return res
     
+    def _data_venc_prox(self, cr, uid, DataFat):
+        context = {}
+        ObjFormPagto = self.pool.get('account.payment.term')
+        if isinstance(DataFat, datetime):
+            Dia = DataFat.day
+            Mes = DataFat.month
+            Ano = DataFat.year
+            Udi = DiasMes(DataFat)
+            if Dia > Udi:
+                Dia = Dia - Udi
+                Mes = Mes + 1
+                if Mes > 12:
+                    Ano = Ano + 1
+                Udi = DiasMes(datetime(Ano, Mes, Dia, 0, 0))
+            ids = ObjFormPagto.search(cr,uid,[('for_contract', '=', True)],order='dia_emiss')
+            diasel = 0
+            diapri = 0
+            for FormPagto in ObjFormPagto.browse(cr,uid,ids,context):
+                
+                if FormPagto.dia_emiss < Udi:
+                    x = FormPagto.dia_emiss
+                else:
+                    x = Udi
+                if diapri == 0:
+                    diapri = x
+                if Dia < x:
+                    diasel = x
+                    break
+            if diasel == 0:
+                diasel = diapri
+                Mes = Mes + 1
+                if Mes > 12:
+                    Mes = 1
+                    Ano = Ano + 1
+            return datetime(Ano, Mes, diasel, 0, 0)
+    
     def _prepara_fatura(self, cr, uid, contrato, pedido, context=None ):
         if context is None:
             context = {}
@@ -42,6 +103,7 @@ class account_analytic_account(osv.osv):
         
         Partner = self.pool.get('res.partner').browse(cr, uid, idPartner, context)
         fcateg = self.pool.get('l10n_br_account.fiscal.category')
+#        idfcateg = False
         idfcateg = fcateg.search(cr,uid,[('code', '=', u'Serviço')])[0]
         
         if not idfcateg:
@@ -50,6 +112,7 @@ class account_analytic_account(osv.osv):
         nrParcela = context.get('nrparcela', False)
         idDiario  = context.get('iddiario', False)
         dtInvoice = context.get('date_invoice', False)
+        dtVenc    = context.get('date_due', False)
 
         if contrato['name'] == False:
             raise osv.except_osv(_('Error!'),
@@ -67,7 +130,10 @@ class account_analytic_account(osv.osv):
         
         _logger.info('Prepara Fatura: NrParcela: '+str(nrParcela)+' / Id Diário: '+str(idDiario)+' / Data: '+str(dtInvoice))
         
-        FormaPgtoId = contrato['inv_payment_term_id'][0]
+        if dtVenc == False:
+            FormaPgtoId = contrato['inv_payment_term_id'][0]
+        else:
+            FormaPgtoId = False
         
         if nrParcela:
             invoice_vals = {
@@ -85,6 +151,7 @@ class account_analytic_account(osv.osv):
                             'payment_term': FormaPgtoId,
                             'fiscal_position': Partner.property_account_position.id,
                             'date_invoice': dtInvoice,
+                            'date_due': dtVenc,
                             'company_id': contrato['company_id'][0],
                             'user_id': uid or False,
                             'contract_id': contrato['id'],
@@ -107,7 +174,7 @@ class account_analytic_account(osv.osv):
         vlQtde = context.get('vlqtde', False)
         pcDesc = context.get('pcDesc', False)
         linha_fat = {
-                     'name': produto.name,
+                     'name': produto.name_template,
                      'origin': contrato['name'],
                      'sequence': vlSeq or 10,
                      'invoice_id': int(idFatura) or None,
@@ -138,10 +205,11 @@ class account_analytic_account(osv.osv):
         if context is None:
             context = {}
 
-        hj = datetime.now()
+        #hj = datetime.now()
         
         idContrato = ids[0]
-        Contrato = self.read(cr, uid, idContrato, context=context)
+        Contrato  = self.read(cr, uid, idContrato, context=context)
+        objFatura = self.pool.get('account.invoice')
         
         if not Contrato['date_start']:
             raise osv.except_osv('Erro!',
@@ -167,14 +235,14 @@ class account_analytic_account(osv.osv):
             raise osv.except_osv('Erro!',
                 u'Defina a forma de pagamento do contrato.')
 
+        ObjFormaPgto = self.pool.get('account.payment.term')
+
         idCliente = Contrato['partner_id'][0]
         Cliente = self.pool.get('res.partner').browse(cr, uid, idCliente, context)
         if Cliente.parent_id:
             raise osv.except_osv(_('Error!'),
                     _(u'O cliente não pode ser um contato./n Informe a empresa que este contato pertence.'))
 
-        ObjFormaPgto = self.pool.get('account.payment.term')
-        
         idDiario = self.pool.get('account.journal').search(cr, uid,[('type', '=', 'sale'), ('company_id', '=', Contrato['company_id'][0])],limit=1)
         if not idDiario:
             raise osv.except_osv(_('Error!'),
@@ -184,7 +252,7 @@ class account_analytic_account(osv.osv):
 
         vlContrato = Contrato['total_proj']
 
-        dtRefer = hj.strftime('%Y-%m-%d')
+        #= hj.strftime('%Y-%m-%d')
          
         idServico = Contrato['obj_product_id'][0]
         if idServico:
@@ -206,25 +274,92 @@ class account_analytic_account(osv.osv):
             idInvFormaPagto = Contrato['inv_payment_term_id'][0]
             if idFormaPgto:
                 FormaPgto = ObjFormaPgto.browse(cr, uid, idFormaPgto, context)
+                Is_Pos    = FormaPgto.is_pos
+                
+                if Is_Pos:
+                    dtRefer = Contrato['date']
+                else:
+                    dtRefer = Contrato['date_start']
+                _logger.info('Data Referencia Para Faturamento do Contrato: '+str(dtRefer))
+            
                 InvFormaPagto = ObjFormaPgto.browse(cr, uid, idInvFormaPagto, context)
-                DiaBase  = InvFormaPagto.dia_emiss
-                _logger.info('Dia Base: '+str(DiaBase))
+                DiaBaseFatu = InvFormaPagto.dia_emiss
+                #DiaBasePgto = InvFormaPagto.line_ids[0].days2
+                    
+                dtFat = datetime.strptime(dtRefer,"%Y-%m-%d")
+                DiaFatu = dtFat.day
+                MesFatu = dtFat.month
+                AnoFatu = dtFat.year
+                #if DiaFatu > DiasMesEx(MesFatu,AnoFatu):
+                #    xDiaFatu = DiasMesEx(MesFatu,AnoFatu)
+                #else:
+                #    xDiaFatu = DiaFatu
+                    
+                DiaPagto = InvFormaPagto.line_ids[0].days2
+                MesPagto = dtFat.month
+                AnoPagto = dtFat.year
+                if DiaPagto <= DiaFatu:
+                    MesPagto = MesPagto+1
+                    while MesPagto > 12:
+                        MesPagto = MesPagto - 12
+                        AnoPagto = dtFat.year + 1
+                if DiaPagto > DiasMesEx(MesPagto,AnoPagto):
+                    xDiaPagto = DiasMesEx(MesPagto,AnoPagto)
+                else:
+                    xDiaPagto = DiaPagto
+                    
+                _logger.info('Contrato:'+str(Contrato['name']))
+
                 pagamentos = ObjFormaPgto.compute(cr, uid, idFormaPgto, value=vlContrato, date_ref=dtRefer)
                 
                 NrParc = 1
                 for pagto in pagamentos:
+                    _logger.info('Parcela: '+str(NrParc)+'/'+str(len(pagamentos)))
+                    context = {}
                     context['nrparcela'] = NrParc
                     context['iddiario'] = idDiario
                     if NrParc == 1:
-                        context['date_invoice'] = dtRefer
+                        _logger.info('Parcela: '+str(NrParc)+
+                                     ' / Dia Faturamento: '+str(DiaFatu)+'/'+str(MesFatu)+'/'+str(AnoFatu)+
+                                     ' / Dia Pagamento: '+str(xDiaPagto)+'/'+str(MesPagto)+'/'+str(AnoPagto))
+
+                        dtFat  = datetime.strptime(str(AnoFatu)+'-'+str(MesFatu)+'-'+str(DiaFatu),'%Y-%m-%d')
+                        dtVenc = datetime.strptime(str(AnoPagto)+'-'+str(MesPagto)+'-'+str(DiaPagto),'%Y-%m-%d')
+                        context['date_invoice'] = dtFat.strftime('%Y-%m-%d')
+                        context['date_due'] = dtVenc.strftime('%Y-%m-%d')
+                        _logger.info("1. Fatura: ["+str(context['date_invoice'])+' -> '+context['date_due'])
+                        if DiaFatu < DiaBaseFatu: 
+                            MesFatu = MesFatu - 1
                     else:
-                        dtFat = datetime.strptime(pagto[0],"%Y-%m-%d")
-                        _logger.info('Data Fatura:'+str(pagto[0]))
-                        Mes = dtFat.month
-                        Ano = dtFat.year
-                        newDtFat = datetime.strptime(str(Ano)+'-'+str(Mes)+'-'+str(DiaBase),'%Y-%m-%d')
-                        context['date_invoice'] = newDtFat
+                        DiaFatu = DiaBaseFatu
+                        MesFatu = MesFatu + 1
+                        while MesFatu > 12:
+                            MesFatu = MesFatu - 12
+                            AnoFatu = AnoFatu + 1
+                        if DiaFatu > DiasMesEx(MesFatu,AnoFatu):
+                            xDiaFatu = DiasMesEx(MesFatu,AnoFatu)
+                        else:
+                            xDiaFatu = DiaFatu
+
+                        MesPagto = MesPagto + 1
+                        while MesPagto > 12:
+                            MesPagto = MesPagto - 12
+                            AnoPagto = AnoPagto + 1
                         
+                        if DiaPagto > DiasMesEx(MesPagto,AnoPagto):
+                            xDiaPagto = DiasMesEx(MesPagto,AnoPagto)
+                        else:
+                            xDiaPagto = DiaPagto
+
+                        _logger.info('Parcela: '+str(NrParc)+
+                                     ' / Dia Faturamento: '+str(xDiaFatu)+'/'+str(MesFatu)+'/'+str(AnoFatu)+
+                                     ' / Dia Pagamento: '+str(xDiaPagto)+'/'+str(MesPagto)+'/'+str(AnoPagto))
+
+                        dtFat  = datetime.strptime(str(AnoFatu)+'-'+str(MesFatu)+'-'+str(DiaFatu),'%Y-%m-%d')
+                        dtVenc = datetime.strptime(str(AnoPagto)+'-'+str(MesPagto)+'-'+str(DiaPagto),'%Y-%m-%d')
+                        context['date_invoice'] = dtFat.strftime('%Y-%m-%d')
+                        context['date_due'] = dtVenc.strftime('%Y-%m-%d')
+                        _logger.info(str(NrParc)+". Fatura: ["+str(context['date_invoice'])+' -> '+context['date_due'])
                     context['vlunit'] = pagto[1]
                     context['sequencia'] = 1
                     context['vlqtde'] = 1
@@ -232,21 +367,48 @@ class account_analytic_account(osv.osv):
 
                     fatura = self._prepara_fatura(cr, uid, Contrato, Pedido, context)
                     _logger.info('Fatura: '+str(fatura))
-                    idFatura = self._create_fatura(cr, uid, fatura, context)
-                    _logger.info('Fatura Id '+str(idFatura)+' gerada com sucesso!')
-                    #idFatura = False
-                    lnfatura = self._prepara_linha_fatura(cr, uid, idFatura, Contrato, context)
-                    _logger.info('Linha: '+str(lnfatura))
-                    idLinha = self._create_line_fatura(cr , uid, lnfatura, context)
-                    _logger.info('Linha Id '+str(idLinha)+' gerada com sucesso!')
                     
-                    NrParc += 1
+                    idFatura = self.search_invoice_number(cr, uid,Contrato['company_id'][0],fatura['internal_number'],context)
+                    
+                    _logger.info('Tem Faturas? '+str(idFatura))
+                    
+                    if not idFatura:                    
+                        idFatura = self._create_fatura(cr, uid, fatura, context)
+                        _logger.info('Fatura Id '+str(idFatura)+' gerada com sucesso!')
+                        #idFatura = False
+                        lnfatura = self._prepara_linha_fatura(cr, uid, idFatura, Contrato, context)
+                        _logger.info('Linha: '+str(lnfatura))
+                        idLinha = self._create_line_fatura(cr , uid, lnfatura, context)
+                        _logger.info('Linha Id '+str(idLinha)+' gerada com sucesso!')
+                        NrParc += 1
+                    else:
+                        [Fatura] = objFatura.browse(cr,uid,idFatura,context)
+                        if Fatura.state == 'cancel':
+                            objFatura.write(cr, uid, idFatura, {'contract_id': Contrato['id'],'state':'draft'}, context)
+                        else:
+                            objFatura.write(cr, uid, idFatura, {'contract_id': Contrato['id']}, context)
+                        NrParc += 1
 
         
         #ObjContrato = self.get(cr, uid, [idContrato], context=context)       
         return self.write(cr, uid, ids, {'state': 'open'}, context=context)
-        #return False
+#        return False
     
+    def set_cancel(self, cr, uid, ids, context=None):
+        ObjFatura = self.pool.get('account.invoice')
+        for account in self.browse(cr, uid, ids, context=context):
+            for idf in account.invoice_ids:
+                fatura = ObjFatura.browse(cr, uid, idf.id,context=context) 
+                if fatura.state in ['draft','cancel']:
+                    _logger.info('Fatura é draft:'+str(fatura.id))
+                    ObjFatura.write(cr,uid,[fatura.id],{'state': 'cancel'})
+                elif fatura.state in ['proforma','proforma2','sefaz_export']:
+                    wf_service = netsvc.LocalService('workflow')
+                    wf_service.trg_validate(uid, 'account.invoice', fatura.id, 'invoice_cancel', cr)
+                else:
+                    raise osv.except_osv(_('Error!'),
+                        _(u'Cancele manualmente a/as fatura/as que já foram emitidas a NF.'))
+        return self.write(cr, uid, ids, {'state': 'cancelled'}, context=context)
     
     
     _columns = {

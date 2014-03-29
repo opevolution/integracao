@@ -12,10 +12,15 @@
 			<field name="inherit_id" ref="account.invoice_form" />
 			<field name="arch" type="xml">
 				<!-- Remove fields in inherited view -->
+				<xpath expr="//field[@name='date_due']" position='replace'>
+					<field name="date_due" on_change="date_due_change(date_due)"/>
+				</xpath>
+
 				<field name="account_id" position="after">
 					<field name="contract_id"/>
-					<field name="date_due"/>
 				</field>
+				
+				<field name="residual" position="replace"/>
 			</field>
 		</record>
 

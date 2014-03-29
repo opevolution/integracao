@@ -57,6 +57,7 @@
 			<field name="arch" type="xml">
                 <button name="action_cancel" position="before">
                 	<button name="contrato_create" states="manual,progress" string="Criar Contrato" type="object" class="oe_highlight" groups="base.group_user"/>
+                	<button name="cancela_pedido" states="done" string="Cancelar Pedido" type="object" class="oe_highlight" groups="base.group_user"/>
 				</button>
 				<field name="name" position="replace">
 					<field name="name" />

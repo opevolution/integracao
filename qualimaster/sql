@@ -1,0 +1,5 @@
+﻿SELECT b.code, d.* FROM account_move_line a
+JOIN account_account b ON a.account_id = b.id
+JOIN account_journal c ON a.journal_id = c.id
+JOIN account_move d on a.move_id = d.id
+WHERE a.move_id = 62

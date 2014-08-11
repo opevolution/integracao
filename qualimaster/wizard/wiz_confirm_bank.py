@@ -85,10 +85,10 @@ class wiz_confirm_bank(osv.osv_memory):
                         }, context=context)
 
                 statement_pool.message_post(cr, uid, [st.id], body=u'Extrato Bancário %s confirmado via wizard CONFIRMAR EXTRATOS, entradas de diário foram criadas.' % (st_number,), context=context)
-            if wizard.autoenv:
-                envmail = self.pool.get('wiz.envio_saldo')
-                newmail = envmail.create(cr,uid,{},context)
-                envmail.action_enviar(cr, uid, [newmail], context)        
+        if wizard.autoenv:
+            envmail = self.pool.get('wiz.envio_saldo')
+            newmail = envmail.create(cr,uid,{},context)
+            envmail.action_enviar(cr, uid, [newmail], context)        
         return True
     
         

@@ -110,8 +110,6 @@ class wiz_envio_saldo(osv.osv_memory):
             	"where state = 'confirm' and journal_id = %s order by journal_id asc, id desc limit 1" % (journal.id)
             cr.execute(sql)
             
-            recipients = []
-            
             for r in cr.fetchall():
                 _logger.info('Saldo: '+str(r[1]))
                 valor = r[1] or 0.00
@@ -136,16 +134,12 @@ class wiz_envio_saldo(osv.osv_memory):
 
         ids = user_pool.search(cr, uid, [('login','like','sarapignataro')])
         if ids:
-            recipients.append(user_pool.browse(cr,uid,ids[0],context).email)
+            copia.append(user_pool.browse(cr,uid,ids[0],context).email)
 
         ids = user_pool.search(cr, uid, [('login','like','larissa')])
         if ids:
-            recipients.append(user_pool.browse(cr,uid,ids[0],context).email)
-
-        ids = user_pool.search(cr, uid, [('login','like','defendi')])
-        if ids:
             copia.append(user_pool.browse(cr,uid,ids[0],context).email)
-            
+           
         email_pool.write(cr, uid, template_ids, {'email_to': ','.join(recipients)})
         email_pool.write(cr, uid, template_ids, {'email_cc': ','.join(copia)})
         email_pool.send_mail(cr, uid, template_ids[0], wizard.id)

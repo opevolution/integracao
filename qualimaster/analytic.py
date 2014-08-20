@@ -356,7 +356,11 @@ class account_analytic_account(osv.osv):
                                      ' / Dia Pagamento: '+str(xDiaPagto)+'/'+str(MesPagto)+'/'+str(AnoPagto))
 
                         dtFat  = datetime.strptime(str(AnoFatu)+'-'+str(MesFatu)+'-'+str(DiaFatu),'%Y-%m-%d')
-                        dtVenc = datetime.strptime(str(AnoPagto)+'-'+str(MesPagto)+'-'+str(DiaPagto),'%Y-%m-%d')
+                        uDiaMes = calendar.monthrange(AnoPagto, MesPagto)[1] 
+                        if DiaPagto <= uDiaMes: 
+                            dtVenc = datetime.strptime(str(AnoPagto)+'-'+str(MesPagto)+'-'+str(DiaPagto),'%Y-%m-%d')
+                        else:
+                            dtVenc = datetime.strptime(str(AnoPagto)+'-'+str(MesPagto)+'-'+str(uDiaMes),'%Y-%m-%d')
                         context['date_invoice'] = dtFat.strftime('%Y-%m-%d')
                         context['date_due'] = dtVenc.strftime('%Y-%m-%d')
                         _logger.info(str(NrParc)+". Fatura: ["+str(context['date_invoice'])+' -> '+context['date_due'])

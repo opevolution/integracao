@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import logging
+import time
+import openerp.addons.decimal_precision as dp
 from osv import fields, osv
+
+_logger = logging.getLogger(__name__)
 
 class area_tecnica(osv.osv):
     """área de atuacao técnica"""
@@ -117,3 +122,107 @@ class model_phase(osv.osv):
 
 model_phase();
 
+# Classe Auditoria Interna do V7 para a qualimaster...
+
+class auditorql(osv.osv):
+    """auditor geral da qualimaster"""
+    _name = 'auditorql'
+    _columns = {
+                'date': fields.date(u'Data Auditoria'),
+                'linhas_ids' : fields.one2many('auditorql.line','auditorql_id','Tarefa',readonly=True),
+                'state': fields.selection([
+                    ('wait','Esperando'),
+                    ('run','Executado'),
+                    ('cancel','Cancelado'),],'Estatus', select=True,),
+                }
+    _defaults = {
+                 'state': 'wait',
+                 'date': lambda *a: time.strftime('%Y-%m-%d'),
+                 }
+    def action_executar(self, cr, uid, ids, context=None):
+        ObjLinha = self.pool.get('auditorql.line') 
+
+        for idNum in ids:
+            idLinha = ObjLinha.CriaLinha(cr, uid, idNum, name='Apagando Lancamentos Zerados', state='init', context=None)
+            sql = "delete from account_move_line where account_move_line.credit = 0 and account_move_line.debit = 0"
+            cr.execute(sql)
+            ObjLinha.write(cr,uid,idLinha,{'state': 'ok'})    
+
+            sql = "select id, amount_untaxed, move_id, state, internal_number from account_invoice"
+#               "where (state != 'paid') OR (state != 'cancel')"
+#               
+            _logger.info(sql)
+#         
+            cr.execute(sql)
+            
+            for crInvoice in cr.fetchall():
+                idLinha = ObjLinha.CriaLinha(cr, uid, idNum, name='Abrindo Fatura nr. %s' % crInvoice[4], state='init', context=None)
+                vlInvoice = float(crInvoice[1])
+                if crInvoice[2]:
+                    sql1 = "select sum(credit), sum(debit) from account_move_line where move_id = %s" % crInvoice[2]
+                    cr.execute(sql1)
+                    smMove = cr.fetchone()
+                    vlMove = float(smMove[0])
+                    vlDif = float(vlMove - vlInvoice)
+                    ObjLinha.CriaLinha(cr, uid, idNum, name=u'Diferenca de %.2f' % vlDif, state='ok', context=None)
+                    if vlMove > 0 and vlDif <> 0:
+                        vlDif = vlMove - vlInvoice
+                        sql2 = "select id, move_id, credit from account_move_line where move_id = %s order by credit desc limit 1" % crInvoice[2]
+                        cr.execute(sql2)
+                        smCred = cr.fetchone()
+                        vlId   = int(smCred[0])
+                        vlCred = float(smCred[2])-vlDif
+                        sql3 = "UPDATE account_move_line SET credit = %.2f WHERE id = %s" % (vlCred,vlId)
+                        cr.execute(sql3)
+                        ObjLinha.CriaLinha(cr, uid, idNum, name=u'Novo credito de %.2f' % vlCred, state='ok', context=None)
+                        
+                        sql2 = "select id, move_id, debit from account_move_line where move_id = %s order by debit desc limit 1" % crInvoice[2]
+                        cr.execute(sql2)
+                        smDeb = cr.fetchone()
+                        vlId   = int(smDeb[0])
+                        vlDeb = float(smDeb[2])-vlDif
+                        sql3 = "UPDATE account_move_line SET debit = %.2f WHERE id = %s" % (vlDeb,vlId)
+                        cr.execute(sql3)
+                        ObjLinha.CriaLinha(cr, uid, idNum, name=u'Novo debito de %.2f' % vlDeb, state='ok', context=None)
+                ObjLinha.write(cr,uid,idLinha,{'state': 'ok'})
+                        
+
+        
+        #idLinha = ObjLinha.CriaLinha(cr, uid, idaudit, name='', state='init', context=None)
+        return True
+
+    def action_cancelar(self, cr, uid, ids, context=None):
+        if context is None:
+            context = {}
+        return self.write(cr, uid, ids, {'state': 'cancel'}, context=context)
+
+auditorql()
+
+class auditorql_line(osv.osv):
+    """linha do auditor geral da qualimaster"""
+    _name = 'auditorql.line'
+    _columns = {
+                'name': fields.char(u"Descrição", size=128),
+                'auditorql_id': fields.many2one('auditorql',u'Auditoria'), 
+                'state': fields.selection([
+                    ('init','Iniciando'),
+                    ('hint','Aviso'),
+                    ('ok','Confirmado'),
+                    ('error','Erro'),],'Estatus', select=True,),
+                }
+    
+    def CriaLinha(self, cr, uid, idaudit, name='', state='init', context=None ):
+        if context is None:
+            context = {}
+        ObjAudit = self.pool.get('auditorql.line')
+        linha = {}
+        linha['auditorql_id'] = idaudit
+        linha['name'] = name
+        linha['state'] = state
+        IdLinha = ObjAudit.create(cr,uid,linha,context)
+        return IdLinha
+    
+    _defaults = {
+                 'state': 'init',
+                 }
+auditorql_line()

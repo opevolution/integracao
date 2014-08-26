@@ -11,6 +11,8 @@
                 'hr',
                 'crm',
                 'project',
+                'hr_timesheet_sheet',
+                'account_analytic_analysis',
                 ],
     'js': [],
     'init_xml': [],

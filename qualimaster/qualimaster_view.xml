@@ -283,5 +283,64 @@
 
         <menuitem action="action_model_project" name="Projetos" id="menu_models_project_view" parent="menu_models" sequence="1"/>         
 
+		<!--   Parte do auditor -->
+
+		<record model="ir.ui.view" id="view_auditorql_tree">
+			<field name="name">auditorql.tree</field>
+			<field name="model">auditorql</field>
+			<field name="arch" type="xml">
+				<tree string="Auditoria">
+                	<field name="date"/>
+                	<field name="state"/>
+				</tree>					
+			</field>
+		</record>
+
+        <record model="ir.ui.view" id="view_auditoriaql">
+            <field name="name">auditorql.form</field>
+            <field name="model">auditorql</field>
+            <field name="arch" type="xml">
+                <form string="Auditoria" version="7.0">
+                    <header>
+                        <button string="Executar" name="action_executar" type="object" states='wait' class="oe_highlight"/>
+                        <button string="Cancelar" name="action_cancelar" type="object" states='wait' class="oe_link"/>
+                    </header>
+                    <sheet string="Modelo Projeto">
+						<group col="4">
+							<group>
+			                	<field name="date" attrs="{'readonly' : [('state','!=','wait')]}"/>
+							</group>
+							<group>						
+			                	<field name="state" attrs="{'readonly' : [('state','!=','wait')]}"/>
+							</group>						
+						</group>
+						<notebook>
+							<page name="tasks" string="Tarefas">
+								<field name="linhas_ids" nolabel="1">
+									<tree string="Fluxo de Caixa">
+										<field name="name" readonly="1"/>
+										<field name="state" readonly="1"/>
+									</tree>
+								</field>
+							</page>
+						</notebook>
+					</sheet>					
+                </form>
+            </field>
+        </record>
+
+        <record id="action_auditoriaql" model="ir.actions.act_window">
+            <field name="name">Auditoria</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">auditorql</field>
+            <field name="view_type">form</field>
+            <field name="view_id" ref="view_auditorql_tree"/>
+            <field name="view_mode">tree,form</field>
+            <field name="context">{}</field>
+        </record>
+		 
+        <menuitem id="menu_base_action_rule_form"
+            parent="base.menu_base_action_rule_admin" action="action_auditoriaql" sequence="5"/>
+	
 	</data>
 </openerp>
